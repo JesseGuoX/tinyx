@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>利用 TwinCAT 3 搭建 EtherCAT 主站环境 | TinyX</title>
+<meta name="keywords" content="EtherCAT, TwinCAT">
+<meta name="description" content="环境
+网络上很多都是使用的 TwinCAT 2 和 WireShark 1.4 来建立主站程序并捕捉 EtherCAT 数据，这里做个新版本的教程，新的软件较旧软件使用方便。
+软件
+
+TwinCAT 3.1 – eXtended Automation Engineering (XAE) 
+WireShark 2
+
+硬件
+PC利用 TwinCAT 作为主站，从站采用的是基于 ET1100 的从站开发板。">
+<meta name="author" content="X">
+<link rel="canonical" href="https://JesseGuoX.github.io/tinyx/post/Setup-TwinCat/">
+<link crossorigin="anonymous" href="/tinyx/assets/css/stylesheet.min.48a18943c2fc15c38a372b8dde1f5e5dc0bc64fa6cb90f5a817d2f8c76b7f3ae.css" integrity="sha256-SKGJQ8L8FcOKNyuN3h9eXcC8ZPpsuQ9agX0vjHa3864=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/tinyx/assets/js/highlight.min.4dcb3c4f38462f66c6b6137227726f5543cb934cca9788f041c087e374491df2.js" integrity="sha256-Tcs8TzhGL2bGthNyJ3JvVUPLk0zKl4jwQcCH43RJHfI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="16x16" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="apple-touch-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="mask-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="利用 TwinCAT 3 搭建 EtherCAT 主站环境" />
+<meta property="og:description" content="环境
+网络上很多都是使用的 TwinCAT 2 和 WireShark 1.4 来建立主站程序并捕捉 EtherCAT 数据，这里做个新版本的教程，新的软件较旧软件使用方便。
+软件
+
+TwinCAT 3.1 – eXtended Automation Engineering (XAE) 
+WireShark 2
+
+硬件
+PC利用 TwinCAT 作为主站，从站采用的是基于 ET1100 的从站开发板。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://JesseGuoX.github.io/tinyx/post/Setup-TwinCat/" /><meta property="og:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2016-01-06T19:28:08&#43;00:00" />
+<meta property="article:modified_time" content="2016-01-06T19:28:08&#43;00:00" /><meta property="og:site_name" content="ExampleSite" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
+
+<meta name="twitter:title" content="利用 TwinCAT 3 搭建 EtherCAT 主站环境"/>
+<meta name="twitter:description" content="环境
+网络上很多都是使用的 TwinCAT 2 和 WireShark 1.4 来建立主站程序并捕捉 EtherCAT 数据，这里做个新版本的教程，新的软件较旧软件使用方便。
+软件
+
+TwinCAT 3.1 – eXtended Automation Engineering (XAE) 
+WireShark 2
+
+硬件
+PC利用 TwinCAT 作为主站，从站采用的是基于 ET1100 的从站开发板。"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Posts",
+      "item": "https://JesseGuoX.github.io/tinyx/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "利用 TwinCAT 3 搭建 EtherCAT 主站环境",
+      "item": "https://JesseGuoX.github.io/tinyx/post/Setup-TwinCat/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "利用 TwinCAT 3 搭建 EtherCAT 主站环境",
+  "name": "利用 TwinCAT 3 搭建 EtherCAT 主站环境",
+  "description": "环境 网络上很多都是使用的 TwinCAT 2 和 WireShark 1.4 来建立主站程序并捕捉 EtherCAT 数据，这里做个新版本的教程，新的软件较旧软件使用方便。\n软件  TwinCAT 3.1 – eXtended Automation Engineering (XAE)  WireShark 2  硬件 PC利用 TwinCAT 作为主站，从站采用的是基于 ET1100 的从站开发板。\n",
+  "keywords": [
+    "EtherCAT", "TwinCAT"
+  ],
+  "articleBody": "环境 网络上很多都是使用的 TwinCAT 2 和 WireShark 1.4 来建立主站程序并捕捉 EtherCAT 数据，这里做个新版本的教程，新的软件较旧软件使用方便。\n软件  TwinCAT 3.1 – eXtended Automation Engineering (XAE)  WireShark 2  硬件 PC利用 TwinCAT 作为主站，从站采用的是基于 ET1100 的从站开发板。\n配置 1. 安装驱动 安装好 TwinCAT 之后需要安装相应网卡的 RT-EtherCAT 适配器的驱动。\n打开 TwinCAT 的 Show Realtime Ethernet Compatible Devices 对话框，如下图：\n接着点击下面的设备列表中的设备，再右边点击 install 安装驱动。安装完会出现在 installed and ready to use devices 下面，表示可以使用了，如下图：\n安装完驱动后会在本地连接的属性列表中多出两个项目，如下图：\n2. 建立项目并捕捉数据 新建 TwinCAT XAE Project 项目，建立完成之后连接 EtherCAT 从站，在工程 I/O 下面 Devices 处扫描设备，如下图：\n扫描到之后我们可以对设备进行操作，如下图可以控制 LED:\n并且我们能在设备的在线选项卡中看到收发出去的帧数，如下图：\n但是到这一步为止我们用 WireShark 并不能捕获到 EtherCAT 的数据帧。需要能捕获到，我们必须打开设备的 Promiscuous Mode，Promiscuous Mode 是什么意思呢？官方解释为：\n Promiscuous Mode (use with Netmon only)\nIf this control box is activated, the TwinCAT Ethernet telegrams are also transferred to Windows and can therefore be analyzed with a network monitor (e.g. Etherreal or MS network monitor).\n 所以我们在适配器选项卡中打开这个模式，如下图：\n这个时候再用 WireShark 捕捉，就能得抓到数据了。\n大功告成！\n",
+  "wordCount" : "120",
+  "inLanguage": "en",
+  "datePublished": "2016-01-06T19:28:08Z",
+  "dateModified": "2016-01-06T19:28:08Z",
+  "author":{
+    "@type": "Person",
+    "name": "X"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://JesseGuoX.github.io/tinyx/post/Setup-TwinCat/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "TinyX",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://JesseGuoX.github.io/tinyx" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/archives" title="Archive">
+                    <span>Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/categories/" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://JesseGuoX.github.io/tinyx">Home</a>&nbsp;»&nbsp;<a href="https://JesseGuoX.github.io/tinyx/post/">Posts</a></div>
+    <h1 class="post-title">
+      利用 TwinCAT 3 搭建 EtherCAT 主站环境
+    </h1>
+    <div class="post-meta"><span title='2016-01-06 19:28:08 +0000 UTC'>January 6, 2016</span>&nbsp;·&nbsp;X
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e7%8e%af%e5%a2%83" aria-label="环境">环境</a><ul>
+                        
+                <li>
+                    <a href="#%e8%bd%af%e4%bb%b6" aria-label="软件">软件</a></li>
+                <li>
+                    <a href="#%e7%a1%ac%e4%bb%b6" aria-label="硬件">硬件</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%85%8d%e7%bd%ae" aria-label="配置">配置</a><ul>
+                        
+                <li>
+                    <a href="#1-%e5%ae%89%e8%a3%85%e9%a9%b1%e5%8a%a8" aria-label="1. 安装驱动">1. 安装驱动</a></li>
+                <li>
+                    <a href="#2-%e5%bb%ba%e7%ab%8b%e9%a1%b9%e7%9b%ae%e5%b9%b6%e6%8d%95%e6%8d%89%e6%95%b0%e6%8d%ae" aria-label="2. 建立项目并捕捉数据">2. 建立项目并捕捉数据</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h2 id="环境">环境<a hidden class="anchor" aria-hidden="true" href="#环境">#</a></h2>
+<p>网络上很多都是使用的 TwinCAT 2 和 WireShark 1.4 来建立主站程序并捕捉 EtherCAT 数据，这里做个新版本的教程，新的软件较旧软件使用方便。</p>
+<h3 id="软件">软件<a hidden class="anchor" aria-hidden="true" href="#软件">#</a></h3>
+<ul>
+<li><a href="https://www.beckhoff.com/english/download/tc3-download-xae.htm?id=1948695119487514">TwinCAT 3.1 – eXtended Automation Engineering (XAE) </a></li>
+<li><a href="https://www.wireshark.org/#download">WireShark 2</a></li>
+</ul>
+<h3 id="硬件">硬件<a hidden class="anchor" aria-hidden="true" href="#硬件">#</a></h3>
+<p>PC利用 TwinCAT 作为主站，从站采用的是基于 ET1100 的从站开发板。</p>
+<h2 id="配置">配置<a hidden class="anchor" aria-hidden="true" href="#配置">#</a></h2>
+<h3 id="1-安装驱动">1. 安装驱动<a hidden class="anchor" aria-hidden="true" href="#1-安装驱动">#</a></h3>
+<p>安装好 TwinCAT 之后需要安装相应网卡的 RT-EtherCAT 适配器的驱动。</p>
+<p>打开 TwinCAT 的 <code>Show Realtime Ethernet Compatible Devices</code> 对话框，如下图：</p>
+<p><img loading="lazy" src="showdevice.png" alt="show device"  />
+</p>
+<p>接着点击下面的设备列表中的设备，再右边点击 <code>install</code> 安装驱动。安装完会出现在 <code>installed and ready to use devices</code> 下面，表示可以使用了，如下图：</p>
+<p><img loading="lazy" src="installadapter.png" alt="install adapter"  />
+</p>
+<p>安装完驱动后会在本地连接的属性列表中多出两个项目，如下图：</p>
+<p><img loading="lazy" src="local1.png" alt="local"  />
+ <img loading="lazy" src="local2.png" alt="local2"  />
+</p>
+<h3 id="2-建立项目并捕捉数据">2. 建立项目并捕捉数据<a hidden class="anchor" aria-hidden="true" href="#2-建立项目并捕捉数据">#</a></h3>
+<p>新建 <code>TwinCAT XAE Project</code> 项目，建立完成之后连接 EtherCAT 从站，在工程 <code>I/O</code> 下面 <code>Devices</code> 处扫描设备，如下图：</p>
+<p><img loading="lazy" src="scan.png" alt="scan"  />
+</p>
+<p>扫描到之后我们可以对设备进行操作，如下图可以控制 LED:</p>
+<p><img loading="lazy" src="scaned.png" alt="scaned"  />
+</p>
+<p>并且我们能在设备的在线选项卡中看到收发出去的帧数，如下图：</p>
+<p><img loading="lazy" src="frames.png" alt="frames"  />
+</p>
+<p>但是到这一步为止我们用 WireShark 并不能捕获到 EtherCAT 的数据帧。需要能捕获到，我们必须打开设备的 <code>Promiscuous Mode</code>，<code>Promiscuous Mode</code> 是什么意思呢？官方解释为：</p>
+<blockquote>
+<p><strong>Promiscuous Mode (use with Netmon only)</strong></p>
+<p>If this control box is activated, the TwinCAT Ethernet telegrams are also transferred to Windows and can therefore be analyzed with a network monitor (e.g. Etherreal or MS network monitor).</p>
+</blockquote>
+<p>所以我们在适配器选项卡中打开这个模式，如下图：</p>
+<p><img loading="lazy" src="p-mode.png" alt="p-mode"  />
+</p>
+<p>这个时候再用 WireShark 捕捉，就能得抓到数据了。</p>
+<p><img loading="lazy" src="wireshark.png" alt="wireshark"  />
+</p>
+<p>大功告成！</p>
+<hr>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://JesseGuoX.github.io/tinyx/tags/EtherCAT/">EtherCAT</a></li>
+      <li><a href="https://JesseGuoX.github.io/tinyx/tags/TwinCAT/">TwinCAT</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://JesseGuoX.github.io/tinyx/post/EtherCAT-Note/">
+    <span class="title">« Prev Page</span>
+    <br>
+    <span>EtherCAT 基础知识汇总</span>
+  </a>
+  <a class="next" href="https://JesseGuoX.github.io/tinyx/post/decode-PROFINET-frames/">
+    <span class="title">Next Page »</span>
+    <br>
+    <span>如何解析 PROFINET 周期性数据帧</span>
+  </a>
+</nav>
+
+  </footer><div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+  const gitalk = new Gitalk({
+    clientID: '',
+    clientSecret: '',
+    repo: '',
+    owner: '',
+    admin: [''],
+    id: location.pathname, 
+    distractionFreeMode: false 
+  });
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('gitalk-container').innerHTML = 'Gitalk comments not available by default when the website is previewed locally.';
+      return;
+    }
+    gitalk.render('gitalk-container');
+  })();
+</script>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://JesseGuoX.github.io/tinyx">TinyX</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>BeagleBone Black 从零到一 (2 MLO、U-Boot) | TinyX</title>
+<meta name="keywords" content="BeagleBone, U-Boot">
+<meta name="description" content="更新：2016-04-01
+什么是 U-Boot 熟悉嵌入式开发的应该都听过它，U-boot 就是启动系统前的一段引导程序，虽然是引导程序，但是功能非常强大。
+这一篇主要讲解如何从无到有运行 U-Boot，关于 U-Boot 引导 Linux 的部分放在另外一篇文章讲解。
+U-Boot 之前的版本以版本号命名如：0.1.0, 0.2.0 这几年改为了以时间和日期命名：U-Boot 2016.03。
+使用 git 获得 U-Boot 的源码：
+git clone git://git.denx.de/u-boot.git 目前我使用的是 2016.02 的版本。
+MLO 及其启动过程 上一篇文章，我们了解了 BeagleBone 有个 SPL 过程，就在这个时候读取 MLO 文件，MLO 文件其实是个精简版的 U-Boot，也是由 U-Boot 生成，但是功能有限，只初始化了部分资源如 DDR，然后启动 U-Boot。
+MLO 文件是如何编译出来的 分析 MLO 的编译过程之前需要知道编译原理和 Makefile 等相关知识。 我们先找找 Makefile 看看能不能找到什么。建议使用 Sublime 编辑器。用全局查找功能查找 MLO 关键字。
+找到 u-boot/scripts/Makefile.spl 文件 117行：
+MLO MLO.byteswap: $(obj)/u-boot-spl.bin FORCE 	$(call if_changed,mkimage) 可以看到 MLO 文件是由 u-boot-spl.">
+<meta name="author" content="X">
+<link rel="canonical" href="https://JesseGuoX.github.io/tinyx/post/BBB-Uboot/">
+<link crossorigin="anonymous" href="/tinyx/assets/css/stylesheet.min.48a18943c2fc15c38a372b8dde1f5e5dc0bc64fa6cb90f5a817d2f8c76b7f3ae.css" integrity="sha256-SKGJQ8L8FcOKNyuN3h9eXcC8ZPpsuQ9agX0vjHa3864=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/tinyx/assets/js/highlight.min.4dcb3c4f38462f66c6b6137227726f5543cb934cca9788f041c087e374491df2.js" integrity="sha256-Tcs8TzhGL2bGthNyJ3JvVUPLk0zKl4jwQcCH43RJHfI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="16x16" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="apple-touch-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="mask-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="BeagleBone Black 从零到一 (2 MLO、U-Boot)" />
+<meta property="og:description" content="更新：2016-04-01
+什么是 U-Boot 熟悉嵌入式开发的应该都听过它，U-boot 就是启动系统前的一段引导程序，虽然是引导程序，但是功能非常强大。
+这一篇主要讲解如何从无到有运行 U-Boot，关于 U-Boot 引导 Linux 的部分放在另外一篇文章讲解。
+U-Boot 之前的版本以版本号命名如：0.1.0, 0.2.0 这几年改为了以时间和日期命名：U-Boot 2016.03。
+使用 git 获得 U-Boot 的源码：
+git clone git://git.denx.de/u-boot.git 目前我使用的是 2016.02 的版本。
+MLO 及其启动过程 上一篇文章，我们了解了 BeagleBone 有个 SPL 过程，就在这个时候读取 MLO 文件，MLO 文件其实是个精简版的 U-Boot，也是由 U-Boot 生成，但是功能有限，只初始化了部分资源如 DDR，然后启动 U-Boot。
+MLO 文件是如何编译出来的 分析 MLO 的编译过程之前需要知道编译原理和 Makefile 等相关知识。 我们先找找 Makefile 看看能不能找到什么。建议使用 Sublime 编辑器。用全局查找功能查找 MLO 关键字。
+找到 u-boot/scripts/Makefile.spl 文件 117行：
+MLO MLO.byteswap: $(obj)/u-boot-spl.bin FORCE 	$(call if_changed,mkimage) 可以看到 MLO 文件是由 u-boot-spl." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://JesseGuoX.github.io/tinyx/post/BBB-Uboot/" /><meta property="og:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2016-03-22T20:57:50&#43;00:00" />
+<meta property="article:modified_time" content="2016-03-22T20:57:50&#43;00:00" /><meta property="og:site_name" content="ExampleSite" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
+
+<meta name="twitter:title" content="BeagleBone Black 从零到一 (2 MLO、U-Boot)"/>
+<meta name="twitter:description" content="更新：2016-04-01
+什么是 U-Boot 熟悉嵌入式开发的应该都听过它，U-boot 就是启动系统前的一段引导程序，虽然是引导程序，但是功能非常强大。
+这一篇主要讲解如何从无到有运行 U-Boot，关于 U-Boot 引导 Linux 的部分放在另外一篇文章讲解。
+U-Boot 之前的版本以版本号命名如：0.1.0, 0.2.0 这几年改为了以时间和日期命名：U-Boot 2016.03。
+使用 git 获得 U-Boot 的源码：
+git clone git://git.denx.de/u-boot.git 目前我使用的是 2016.02 的版本。
+MLO 及其启动过程 上一篇文章，我们了解了 BeagleBone 有个 SPL 过程，就在这个时候读取 MLO 文件，MLO 文件其实是个精简版的 U-Boot，也是由 U-Boot 生成，但是功能有限，只初始化了部分资源如 DDR，然后启动 U-Boot。
+MLO 文件是如何编译出来的 分析 MLO 的编译过程之前需要知道编译原理和 Makefile 等相关知识。 我们先找找 Makefile 看看能不能找到什么。建议使用 Sublime 编辑器。用全局查找功能查找 MLO 关键字。
+找到 u-boot/scripts/Makefile.spl 文件 117行：
+MLO MLO.byteswap: $(obj)/u-boot-spl.bin FORCE 	$(call if_changed,mkimage) 可以看到 MLO 文件是由 u-boot-spl."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Posts",
+      "item": "https://JesseGuoX.github.io/tinyx/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "BeagleBone Black 从零到一 (2 MLO、U-Boot)",
+      "item": "https://JesseGuoX.github.io/tinyx/post/BBB-Uboot/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "BeagleBone Black 从零到一 (2 MLO、U-Boot)",
+  "name": "BeagleBone Black 从零到一 (2 MLO、U-Boot)",
+  "description": "更新：2016-04-01\n什么是 U-Boot 熟悉嵌入式开发的应该都听过它，U-boot 就是启动系统前的一段引导程序，虽然是引导程序，但是功能非常强大。\n这一篇主要讲解如何从无到有运行 U-Boot，关于 U-Boot 引导 Linux 的部分放在另外一篇文章讲解。\nU-Boot 之前的版本以版本号命名如：0.1.0, 0.2.0 这几年改为了以时间和日期命名：U-Boot 2016.03。\n使用 git 获得 U-Boot 的源码：\ngit clone git://git.denx.de/u-boot.git 目前我使用的是 2016.02 的版本。\nMLO 及其启动过程 上一篇文章，我们了解了 BeagleBone 有个 SPL 过程，就在这个时候读取 MLO 文件，MLO 文件其实是个精简版的 U-Boot，也是由 U-Boot 生成，但是功能有限，只初始化了部分资源如 DDR，然后启动 U-Boot。\nMLO 文件是如何编译出来的 分析 MLO 的编译过程之前需要知道编译原理和 Makefile 等相关知识。 我们先找找 Makefile 看看能不能找到什么。建议使用 Sublime 编辑器。用全局查找功能查找 MLO 关键字。\n找到 u-boot/scripts/Makefile.spl 文件 117行：\nMLO MLO.byteswap: $(obj)/u-boot-spl.bin FORCE \t$(call if_changed,mkimage) 可以看到 MLO 文件是由 u-boot-spl.",
+  "keywords": [
+    "BeagleBone", "U-Boot"
+  ],
+  "articleBody": "更新：2016-04-01\n什么是 U-Boot 熟悉嵌入式开发的应该都听过它，U-boot 就是启动系统前的一段引导程序，虽然是引导程序，但是功能非常强大。\n这一篇主要讲解如何从无到有运行 U-Boot，关于 U-Boot 引导 Linux 的部分放在另外一篇文章讲解。\nU-Boot 之前的版本以版本号命名如：0.1.0, 0.2.0 这几年改为了以时间和日期命名：U-Boot 2016.03。\n使用 git 获得 U-Boot 的源码：\ngit clone git://git.denx.de/u-boot.git 目前我使用的是 2016.02 的版本。\nMLO 及其启动过程 上一篇文章，我们了解了 BeagleBone 有个 SPL 过程，就在这个时候读取 MLO 文件，MLO 文件其实是个精简版的 U-Boot，也是由 U-Boot 生成，但是功能有限，只初始化了部分资源如 DDR，然后启动 U-Boot。\nMLO 文件是如何编译出来的 分析 MLO 的编译过程之前需要知道编译原理和 Makefile 等相关知识。 我们先找找 Makefile 看看能不能找到什么。建议使用 Sublime 编辑器。用全局查找功能查找 MLO 关键字。\n找到 u-boot/scripts/Makefile.spl 文件 117行：\nMLO MLO.byteswap: $(obj)/u-boot-spl.bin FORCE \t$(call if_changed,mkimage) 可以看到 MLO 文件是由 u-boot-spl.bin 文件通过 mkimage 命令生成的。 再查到 u-boot/Makefile 文件 1310 行：\nspl/u-boot-spl.bin: spl/u-boot-spl \t@: spl/u-boot-spl: tools prepare $(if $(CONFIG_OF_SEPARATE),dts/dt.dtb) \t$(Q)$(MAKE) obj=spl -f $(srctree)/scripts/Makefile.spl all u-boot-spl.bin 文件是还是由 u-boot/scripts/Makefile.spl 文件生成。 文件 u-boot/scripts/Makefile.spl 168 行 定义了 u-boot-spl.bin 的生成：\nifeq ($(CONFIG_SPL_OF_CONTROL),y) $(obj)/$(SPL_BIN)-dtb.bin: $(obj)/$(SPL_BIN)-nodtb.bin $(obj)/$(SPL_BIN)-pad.bin \\ $(obj)/$(SPL_BIN).dtb FORCE $(call if_changed,cat) $(obj)/$(SPL_BIN).bin: $(obj)/$(SPL_BIN)-dtb.bin FORCE $(call if_changed,copy) else $(obj)/$(SPL_BIN).bin: $(obj)/$(SPL_BIN)-nodtb.bin FORCE $(call if_changed,copy) endif 因为 SPL_BIN 在 第32行 定义为 u-boot-spl:\n{% codeblock lang:make u-boot/scripts/Makefile.spl %} ifeq ($(CONFIG_TPL_BUILD),y) SPL_BIN := u-boot-tpl else SPL_BIN := u-boot-spl endif {% endcodeblock %}\n由 168 行 上面的定义可以知道 u-boot-spl.bin 和 u-boot-spl-nodtb.bin 有关系。\n接着查找到第223行：\n$(obj)/$(SPL_BIN)-nodtb.bin: $(obj)/$(SPL_BIN) FORCE \t$(call if_changed,objcopy) u-boot-spl-nodtb.bin 是通过 objcopy 命令由 u-boot-spl 生成。\n再看第246行:\n$(obj)/$(SPL_BIN): $(u-boot-spl-init) $(u-boot-spl-main) $(obj)/u-boot-spl.lds FORCE \t$(call if_changed,u-boot-spl) 所以u-boot-spl 是由 u-boot-spl.lds 链接文件生成的 ，但是目录下面有几个u-boot-spl.lds文件，到底是哪个 lds 文件呢，上面是 $(obj)/u-boot-spl.lds， obj 在 1310 行 编译 u-boot-spl.bin 的时候赋值为 obj=spl，所以我们需要看 u-boot/spl/u-boot-spl.lds 这个文件，但是如果你之前没有编译过这个文件是没有的。这个文件是如何生成的呢？我们稍后再看，先看 lds 文件的内容：\nMEMORY { .sram : ORIGIN = 0x402F0400, LENGTH = (0x4030B800 - 0x402F0400) } MEMORY { .sdram : ORIGIN = 0x80a00000, LENGTH = 0x80000 } OUTPUT_FORMAT(\"elf32-littlearm\", \"elf32-littlearm\", \"elf32-littlearm\") OUTPUT_ARCH(arm) ENTRY(_start) SECTIONS {  .text :  {  __start = .;  *(.vectors)  arch/arm/cpu/armv7/start.o (.text)  *(.text*)  } .sram  . = ALIGN(4);  .rodata : { *(SORT_BY_ALIGNMENT(.rodata*)) } .sram  . = ALIGN(4);  .data : { *(SORT_BY_ALIGNMENT(.data*)) } .sram  .u_boot_list : {  KEEP(*(SORT(.u_boot_list*)));  } .sram  . = ALIGN(4);  __image_copy_end = .;  .end :  {  *(.__end)  } .sram  .bss :  {  . = ALIGN(4);  __bss_start = .;  *(.bss*)  . = ALIGN(4);  __bss_end = .;  } .sdram } 链接文件里面说明了内存布局，arch/arm/cpu/armv7/start.o 代码段都放在 SRAM 中，所以 arch/arm/cpu/armv7/start.S 就是我们要找的东西了。\nlds 链接文件的生成 u-boot/spl/u-boot-spl.lds 这个文件的生成在 u-boot/scripts/Makefile.spl 有解释:\n$(obj)/u-boot-spl.lds: $(LDSCRIPT) FORCE \t$(call if_changed_dep,cpp_lds) LDSCRIPT 的定义：\n# Linker Script ifdef CONFIG_SPL_LDSCRIPT # need to strip off double quotes LDSCRIPT := $(addprefix $(srctree)/,$(CONFIG_SPL_LDSCRIPT:\"%\"=%)) endif  ifeq ($(wildcard $(LDSCRIPT)),) \tLDSCRIPT := $(srctree)/board/$(BOARDDIR)/u-boot-spl.lds endif ifeq ($(wildcard $(LDSCRIPT)),) \tLDSCRIPT := $(srctree)/$(CPUDIR)/u-boot-spl.lds endif ifeq ($(wildcard $(LDSCRIPT)),) \tLDSCRIPT := $(srctree)/arch/$(ARCH)/cpu/u-boot-spl.lds endif ifeq ($(wildcard $(LDSCRIPT)),) $(error could not find linker script) endif 可见 Makefile.spl 文件中先是判断有没有指定的 lds 文件，如果没有指定的，就查找 board 文件夹中目标板目录下面有没有 lds 文件，如果没有就查找相应的 cpu 目录，因为我们目标器件是 am335x，所以发现有 u-boot/arch/arm/cpu/armv7/am33xx/u-boot-spl.lds 再通过 cpp_lds 命令编译成，cpp_lds 是一组命令的集合，具体定义还是在 Makefile.spl 文件中，我们查看 u-boot/arch/arm/cpu/armv7/am33xx/u-boot-spl.lds 也发现 MLO 文件代码是在 start.S 文件中。\nMLO 程序分析 查看 start.S 分析下 MLO 程序具体的执行流程，MLO 的 makefile 会根据 CONFIG_SPL_BUILD 编译不同的源文件，同样的在源码内也通过 CONFIG_SPL_BUILD 控制不同的代码执行，前面一部分 MLO 文件和 U-Boot 是类似的，进入到 _main 函数中两个程序的功能就开始出现差异了：\nreset //(arch/arm/cpu/armv7/start.S) save_boot_params_ret //(arch/arm/cpu/armv7/start.S)  |- disable interrupts  |- cpu_init_cp15 //(arch/arm/cpu/armv7/start.S)  | |- Invalidate L1 I/D  | |- disable MMU stuff and caches  |- cpu_init_crit //(arch/arm/cpu/armv7/start.S)  | |- lowlevel_init //(arch/arm/cpu/armv7/lowlevel_init.S)  | |- Setup a temporary stack  | |- Set up global data  | |- s_init //(arch/arm/cpu/armv7/am33xx/board.c)  | |- watchdog_disable  | |- set_uart_mux_conf  | |- setup_clocks_for_console  | |- uart_soft_reset  |- _main //(arch/arm/lib/crt0.S)   |(MLO)如果是 MLO 文件  |- board_init_f //(arch/arm/cpu/armv7/am33xx/board.c)  | |- board_early_init_f //(arch/arm/cpu/armv7/am33xx/board.c)  | | |- prcm_init  | | |- set_mux_conf_regs  | |- sdram_init //(board/ti/am335x/board.c) 初始化 DDR  |- spl_relocate_stack_gd  |- board_init_r //(common/spl/spl.c)  |- ...  |- spl_load_image //根据不同的启动方式加载 u-boot 镜像，  |- jump_to_image_no_args //进入u-boot代码运行    |(U-Boot)如果是U-Boot 镜像  |- board_init_f //(common/board_f.c)  | |- ...  | |- initcall_run_list(init_sequence_f)  | |- ...  |  |- relocate_code //(arch/arm/lib/relocate.S) 代码重定位  |- relocate_vectors //(arch/arm/lib/relocate.S) 向量表重定义  |- Set up final (full) environment  |- board_init_r //(common/board_r.c)  |- initcall_run_list(init_sequence_r)//初始化各种外设  |- main_loop() 当 U-Boot 重定位好代码、向量表之后，运行 board_init_r  函数，此函数会调用 init_sequence_r 列表里面的函数初始化各种外设驱动，最后在 main_loop() 函数中运行，U-Boot 有个 bootdelay 延时启动，如果不手动停止 U-Boot 会自动运行 bootcmd 包含的命令。\n内核引导这部分放在另外一篇文章详细讲解。\nU-Boot 编译 编译 U-Boot 编译 U－Boot 前我们需要安装交叉编译器：\n# sudo apt-get install gcc-arm-linux-gnueabihf 下载 U-Boot 源码：\n# git clone git://git.denx.de/u-boot.git 因为 U-Boot 官方已经支持了 Beaglebone Black 所以配置文件也已经自带了，编译输入如下命令：\n# make distclean # make am335x_boneblack_defconfig # ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- make 片刻后会生成 MLO 和 u-boot.img 文件。\n配置 U-Boot 参数 有两种方式可以配置 U-Boot 的一些参数，分别是 uEnv.txt 和 boot.src 文件。 U-Boot 启动的时候会在启动分区寻找这两个文件。\n boot.scr: This file is a U-Boot script. It contains instructions for U-Boot. Using these instruction, the kernel is loaded into memory, and (optionally) a ramdisk is loaded. boot.scr can also pass parameters to the kernel. This file is a compiled script, and cannot be edited directly. In some cases, boot.scr loads further instructions and configuration parameters from a text file.\n uEnv.txt: A file with additional boot parameters. This file can be read by boot.scr, or by the boot sequence if there is no script file. uEnv.txt is a regular text file that can be edited. This file should have Unix line ending, so a compatible program must be used when editing this file.\nU-Boot 启动的时候如果不打断会调用 bootcmd 包含的命令来执行，通常 bootcmd 会调用 bootscript 脚本也就是 boot.scr 里面的命令进行执行， boot.scr 通常也会先读取 uEnv.txt 确定额外参数，因为 boot.src 文件必须通过 boot.cmd 文件编译而来， uEnv.txt 则是可以任意编辑，这样可配置性就大大提高了。如果没有 boot.src 文件，U-Boot 有默认配置的 bootcmd 命令。\n在 Beagelbone Black 中我们不需要额外的 boot.scr 文件，用默认的命令即可，默认的命令为：\n#define CONFIG_BOOTCOMMAND \\ \"run findfdt; \" \\ \"run distro_bootcmd\" run distro_bootcmd 最终会调用 run mmcboot 命令加载 uEnv.txt 文件，并且会运行 uEnv.txt 文件里面 uenvcmd 指代的命令。\nuEnv.txt 从网络启动例子：\nconsole=ttyO0,115200n8 ipaddr=192.168.23.2 serverip=192.168.23.1 rootpath=/exports/rootfs netargs=setenv bootargs console=${console} ${optargs} root=/dev/nfs nfsroot=${serverip}:${rootpath},${nfsopts} rw ip=${ipaddr}:${serverip}:192.168.23.1:255.255.255.0:beaglebone:eth0:none:192.168.23.1 netboot=echo Booting from network ...; tftp ${loadaddr} ${bootfile}; tftp ${fdtaddr} ${fdtfile}; run netargs; bootz ${loadaddr} - ${fdtaddr} uenvcmd=run netboot 制作 U-Boot 的 SD 启动卡 制作 SD 启动卡之前首先需要为 SD 卡分区， ROM Code 启动的时候如果是从 MMC 设备加载启动代码，ROM Code 会从第一个活动分区寻找名为 “MLO” 的文件，并且此分区必须为 FAT文件系统。所以制作 U-Boot 的启动卡只需要一个带有 MLO 和 U-Boot 镜像的 FAT 格式的 SD 卡，如果需要启动 Linux 内核还需要别的分区，我们以后再讲。\n有两种方式可以制作包含 U-Boot 的可启动的 SD 卡，一种是用 RAW Mode 的方式，还有一种是用 FTA 的方式。\nRAW Mode 和烧写方式在这篇文章里面有讲：解析 BeagleBone Black 官方镜像。\nFTA 模式下只要建立一个 FTA 分区再把 MLO 和 uboot.img 文件拷贝进去即可。\n我是使用的 USB 读卡器，插入后 Linux /dev/ 目录会显示 /dev/sd* 设备，我这里多出两个设备分别显示 /dev/sdb 和 /dev/sdb1 ，其中 /dev/sdb 表示一整个物理磁盘， /dev/sdb1 表示的是具体的分区。\n使用命令 sudo fdisk /dev/sdb 管理磁盘:\na : toggle a bootable flag（设置或取消启动表示）\nb : edit bsd disklabel（编辑 bsd disklabel)\nc : toggle the dos compatibility flag\nd : delete a partition （删除一个分区）\nl : list known partition types （列出已知的分区类型）\nm : print this menu （打印次列表）\nn : add a new partition （增加一个新分区）\no : create a new empty DOS partition table （建立一个新的空 DOS 分区表）\np : print the partition table （打印分区表）\nq : quit without saving changes （不保存退出）\ns : create a new empty Sun disklabel\nt : change a partition’s system id\nu : change display/entry units\nv : verify the partition table （验证分区表）\nw : write table to disk and exit （把分区表写入磁盘）\nx : extra functionality (experts only) （额外的功能）\n新建启动分区：\nCommand (m for help): p  Disk /dev/sdb: 7746 MB, 7746879488 bytes 24 heads, 20 sectors/track, 31522 cylinders, total 15130624 sectors Units = sectors of 1 * 512 = 512 bytes Sector size (logical/physical): 512 bytes / 512 bytes I/O size (minimum/optimal): 512 bytes / 512 bytes Disk identifier: 0x00000000   Device Boot Start End Blocks Id System /dev/sdb1 * 2048 15130623 7564288 c W95 FAT32 (LBA)  Command (m for help): m Command action  a toggle a bootable flag  b edit bsd disklabel  c toggle the dos compatibility flag  d delete a partition  l list known partition types  m print this menu  n add a new partition  o create a new empty DOS partition table  p print the partition table  q quit without saving changes  s create a new empty Sun disklabel  t change a partition's system id  u change display/entry units  v verify the partition table  w write table to disk and exit  x extra functionality (experts only)  Command (m for help): d Selected partition 1  Command (m for help): p  Disk /dev/sdb: 7746 MB, 7746879488 bytes 24 heads, 20 sectors/track, 31522 cylinders, total 15130624 sectors Units = sectors of 1 * 512 = 512 bytes Sector size (logical/physical): 512 bytes / 512 bytes I/O size (minimum/optimal): 512 bytes / 512 bytes Disk identifier: 0x00000000   Device Boot Start End Blocks Id System  Command (m for help): n Partition type:  p primary (0 primary, 0 extended, 4 free)  e extended Select (default p): p Partition number (1-4, default 1): Using default value 1 First sector (2048-15130623, default 2048): Using default value 2048 Last sector, +sectors or +size{K,M,G} (2048-15130623, default 15130623): Using default value 15130623  Command (m for help): p  Disk /dev/sdb: 7746 MB, 7746879488 bytes 24 heads, 20 sectors/track, 31522 cylinders, total 15130624 sectors Units = sectors of 1 * 512 = 512 bytes Sector size (logical/physical): 512 bytes / 512 bytes I/O size (minimum/optimal): 512 bytes / 512 bytes Disk identifier: 0x00000000   Device Boot Start End Blocks Id System /dev/sdb1 2048 15130623 7564288 83 Linux  Command (m for help): t Selected partition 1 Hex code (type L to list codes): c Changed system type of partition 1 to c (W95 FAT32 (LBA))  Command (m for help): a Partition number (1-4): 1  Command (m for help): p  Disk /dev/sdb: 7746 MB, 7746879488 bytes 24 heads, 20 sectors/track, 31522 cylinders, total 15130624 sectors Units = sectors of 1 * 512 = 512 bytes Sector size (logical/physical): 512 bytes / 512 bytes I/O size (minimum/optimal): 512 bytes / 512 bytes Disk identifier: 0x00000000   Device Boot Start End Blocks Id System /dev/sdb1 * 2048 15130623 7564288 c W95 FAT32 (LBA)  Command (m for help): w The partition table has been altered!  Calling ioctl() to re-read partition table.  WARNING: If you have created or modified any DOS 6.x partitions, please see the fdisk manual page for additional information. Syncing disks. 建立好新的分区之后需要命名并格式化：\n# sudo mkfs.vfat -F 32 -n boot /dev/sdb1 格式化之后挂载磁盘并把 MLO 文件和 u-boot.img 文件拷贝进去：\n# sudo mount /dev/sdb1 /media/jg/boot  # sudo cp MLO /media/jg/boot/MLO # ls /media/jg/boot  MLO # sudo cp u-boot.img /media/jg/boot/u-boot.img # ls /media/jg/boot  MLO u-boot.img # sync  # sudo umount /media/jg/boot  接着把 SD 卡插入 Beaglebone Black 并且按着 S2 按钮上电，从串口打印出的信息我们可以看到 U-Boot 已经可以正常启动了：\nU-Boot SPL 2016.03-rc2-00084-g595af9d (Feb 29 2016 - 22:21:20) Trying to boot from MMC Card doesn't support part_switch MMC partition switch failed *** Warning - MMC partition switch failed, using default environment reading u-boot.img reading u-boot.img U-Boot 2016.03-rc2-00084-g595af9d (Feb 29 2016 - 22:21:20 +0800)  Watchdog enabled I2C: ready DRAM: 512 MiB MMC: OMAP SD/MMC: 0, OMAP SD/MMC: 1 *** Warning - bad CRC, using default environment Net:  not set. Validating first E-fuse MAC cpsw, usb_ether Press SPACE to abort autoboot in 2 seconds switch to partitions #0, OK mmc0 is current device Scanning mmc 0:1... switch to partitions #0, OK mmc0 is current device SD/MMC found on device 0 reading boot.scr ** Unable to read file boot.scr ** reading uEnv.txt ** Unable to read file uEnv.txt ** ** File not found /boot/zImage ** switch to partitions #0, OK mmc1(part 0) is current device Scanning mmc 1:1... switch to partitions #0, OK mmc1(part 0) is current device SD/MMC found on device 1 reading boot.scr ** Unable to read file boot.scr ** reading uEnv.txt ** Unable to read file uEnv.txt ** ** File not found /boot/zImage ** ## Error: \"bootcmd_nand0\" not defined cpsw Waiting for PHY auto negotiation to complete......... TIMEOUT ! BOOTP broadcast 1 BOOTP broadcast 2 BOOTP broadcast 3 BOOTP broadcast 4 启动之后，前面一段打印信息是 MLO 程序打印出来的，读取 U-Boot 之后开始运行完整的 U-Boot，之后程序扫描各个设备读取 boot.scr 和 uEnv.txt 文件，接着再读取是否有 Linux 内核可以运行。\n参考资料  Beaglebone Black——制作自己的SD启动卡 U-Boot on BeagleBone Black AM335x U-Boot User’s Guide Pandaboard bootload(uboot) 启动流程探究 u-boot启动流程   ",
+  "wordCount" : "1768",
+  "inLanguage": "en",
+  "datePublished": "2016-03-22T20:57:50Z",
+  "dateModified": "2016-03-22T20:57:50Z",
+  "author":{
+    "@type": "Person",
+    "name": "X"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://JesseGuoX.github.io/tinyx/post/BBB-Uboot/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "TinyX",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://JesseGuoX.github.io/tinyx" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/archives" title="Archive">
+                    <span>Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/categories/" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://JesseGuoX.github.io/tinyx">Home</a>&nbsp;»&nbsp;<a href="https://JesseGuoX.github.io/tinyx/post/">Posts</a></div>
+    <h1 class="post-title">
+      BeagleBone Black 从零到一 (2 MLO、U-Boot)
+    </h1>
+    <div class="post-meta"><span title='2016-03-22 20:57:50 +0000 UTC'>March 22, 2016</span>&nbsp;·&nbsp;X
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e4%bb%80%e4%b9%88%e6%98%af-u-boot" aria-label="什么是 U-Boot">什么是 U-Boot</a></li>
+                <li>
+                    <a href="#mlo-%e5%8f%8a%e5%85%b6%e5%90%af%e5%8a%a8%e8%bf%87%e7%a8%8b" aria-label="MLO 及其启动过程">MLO 及其启动过程</a><ul>
+                        
+                <li>
+                    <a href="#mlo-%e6%96%87%e4%bb%b6%e6%98%af%e5%a6%82%e4%bd%95%e7%bc%96%e8%af%91%e5%87%ba%e6%9d%a5%e7%9a%84" aria-label="MLO 文件是如何编译出来的">MLO 文件是如何编译出来的</a></li>
+                <li>
+                    <a href="#lds-%e9%93%be%e6%8e%a5%e6%96%87%e4%bb%b6%e7%9a%84%e7%94%9f%e6%88%90" aria-label="lds 链接文件的生成">lds 链接文件的生成</a></li>
+                <li>
+                    <a href="#mlo-%e7%a8%8b%e5%ba%8f%e5%88%86%e6%9e%90" aria-label="MLO 程序分析">MLO 程序分析</a></li></ul>
+                </li>
+                <li>
+                    <a href="#u-boot-%e7%bc%96%e8%af%91" aria-label="U-Boot 编译">U-Boot 编译</a><ul>
+                        
+                <li>
+                    <a href="#%e7%bc%96%e8%af%91-u-boot" aria-label="编译 U-Boot">编译 U-Boot</a></li>
+                <li>
+                    <a href="#%e9%85%8d%e7%bd%ae-u-boot-%e5%8f%82%e6%95%b0" aria-label="配置 U-Boot 参数">配置 U-Boot 参数</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%88%b6%e4%bd%9c-u-boot-%e7%9a%84-sd-%e5%90%af%e5%8a%a8%e5%8d%a1" aria-label="制作 U-Boot 的 SD 启动卡">制作 U-Boot 的 SD 启动卡</a></li>
+                <li>
+                    <a href="#%e5%8f%82%e8%80%83%e8%b5%84%e6%96%99" aria-label="参考资料">参考资料</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>更新：2016-04-01</p>
+<h2 id="什么是-u-boot">什么是 U-Boot<a hidden class="anchor" aria-hidden="true" href="#什么是-u-boot">#</a></h2>
+<p>熟悉嵌入式开发的应该都听过它，U-boot 就是启动系统前的一段引导程序，虽然是引导程序，但是功能非常强大。</p>
+<p><strong>这一篇主要讲解如何从无到有运行 U-Boot，关于 U-Boot 引导 Linux 的部分放在另外一篇文章讲解。</strong></p>
+<p>U-Boot 之前的版本以版本号命名如：0.1.0, 0.2.0 这几年改为了以时间和日期命名：U-Boot 2016.03。</p>
+<p>使用 git 获得 U-Boot 的源码：</p>
+<pre tabindex="0"><code>git clone git://git.denx.de/u-boot.git
+</code></pre><p>目前我使用的是 2016.02 的版本。</p>
+<!-- raw HTML omitted -->
+<h2 id="mlo-及其启动过程">MLO 及其启动过程<a hidden class="anchor" aria-hidden="true" href="#mlo-及其启动过程">#</a></h2>
+<p><a href="http://jexbat.com/2016/BBB-bootmode/">上一篇文章</a>，我们了解了 BeagleBone 有个 SPL 过程，就在这个时候读取 MLO 文件，MLO 文件其实是个精简版的 U-Boot，也是由 U-Boot 生成，但是功能有限，只初始化了部分资源如 DDR，然后启动 U-Boot。</p>
+<h3 id="mlo-文件是如何编译出来的">MLO 文件是如何编译出来的<a hidden class="anchor" aria-hidden="true" href="#mlo-文件是如何编译出来的">#</a></h3>
+<p>分析 MLO 的编译过程之前需要知道编译原理和 Makefile 等相关知识。
+我们先找找 Makefile 看看能不能找到什么。建议使用 <a href="https://www.sublimetext.com/">Sublime</a> 编辑器。用全局查找功能查找 MLO 关键字。</p>
+<p>找到 <code>u-boot/scripts/Makefile.spl</code> 文件 <strong><code>117行</code></strong>：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-make" data-lang="make"><span style="display:flex;"><span><span style="color:#a6e22e">MLO MLO.byteswap</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>obj<span style="color:#66d9ef">)</span>/u-boot-spl.bin FORCE
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>call if_changed,mkimage<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><p>可以看到 MLO 文件是由 <code>u-boot-spl.bin</code> 文件通过 <code>mkimage</code> 命令生成的。
+再查到 <code>u-boot/Makefile</code> 文件 <strong><code>1310 行</code></strong>：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-make" data-lang="make"><span style="display:flex;"><span><span style="color:#a6e22e">spl/u-boot-spl.bin</span><span style="color:#f92672">:</span> spl/u-boot-spl
+</span></span><span style="display:flex;"><span>	@:
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">spl/u-boot-spl</span><span style="color:#f92672">:</span> tools prepare <span style="color:#66d9ef">$(</span>if <span style="color:#66d9ef">$(</span>CONFIG_OF_SEPARATE<span style="color:#66d9ef">)</span>,dts/dt.dtb<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>Q<span style="color:#66d9ef">)$(</span>MAKE<span style="color:#66d9ef">)</span> obj<span style="color:#f92672">=</span>spl -f <span style="color:#66d9ef">$(</span>srctree<span style="color:#66d9ef">)</span>/scripts/Makefile.spl all
+</span></span></code></pre></div><p><code>u-boot-spl.bin</code> 文件是还是由 <code>u-boot/scripts/Makefile.spl</code> 文件生成。
+文件 <code>u-boot/scripts/Makefile.spl</code> <strong><code>168 行</code></strong> 定义了 <code>u-boot-spl.bin</code> 的生成：</p>
+<pre tabindex="0"><code class="language-lang:make" data-lang="lang:make">ifeq ($(CONFIG_SPL_OF_CONTROL),y)
+$(obj)/$(SPL_BIN)-dtb.bin: $(obj)/$(SPL_BIN)-nodtb.bin $(obj)/$(SPL_BIN)-pad.bin \
+		$(obj)/$(SPL_BIN).dtb FORCE
+	$(call if_changed,cat)
+
+$(obj)/$(SPL_BIN).bin: $(obj)/$(SPL_BIN)-dtb.bin FORCE
+	$(call if_changed,copy)
+else
+$(obj)/$(SPL_BIN).bin: $(obj)/$(SPL_BIN)-nodtb.bin FORCE
+	$(call if_changed,copy)
+endif
+</code></pre><p>因为 <code>SPL_BIN</code> 在 <strong><code>第32行</code></strong> 定义为 <code>u-boot-spl</code>:</p>
+<p>{% codeblock lang:make u-boot/scripts/Makefile.spl %}
+ifeq ($(CONFIG_TPL_BUILD),y)
+SPL_BIN := u-boot-tpl
+else
+SPL_BIN := u-boot-spl
+endif
+{% endcodeblock %}</p>
+<p>由 <strong><code>168 行</code></strong> 上面的定义可以知道 <code>u-boot-spl.bin</code> 和 <code>u-boot-spl-nodtb.bin</code> 有关系。</p>
+<p>接着查找到<strong>第223行</strong>：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-make" data-lang="make"><span style="display:flex;"><span><span style="color:#a6e22e">$(obj)/$(SPL_BIN)-nodtb.bin</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>obj<span style="color:#66d9ef">)</span>/<span style="color:#66d9ef">$(</span>SPL_BIN<span style="color:#66d9ef">)</span> FORCE
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>call if_changed,objcopy<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><p><code>u-boot-spl-nodtb.bin</code> 是通过 objcopy 命令由 <code>u-boot-spl</code> 生成。</p>
+<p>再看<strong>第246行</strong>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-make" data-lang="make"><span style="display:flex;"><span><span style="color:#a6e22e">$(obj)/$(SPL_BIN)</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>u-boot-spl-init<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>u-boot-spl-main<span style="color:#66d9ef">)</span> <span style="color:#66d9ef">$(</span>obj<span style="color:#66d9ef">)</span>/u-boot-spl.lds FORCE
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>call if_changed,u-boot-spl<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><p>所以<code>u-boot-spl</code> 是由 <code>u-boot-spl.lds</code> 链接文件生成的 ，但是目录下面有几个<code>u-boot-spl.lds</code>文件，到底是哪个 lds 文件呢，上面是 <code>$(obj)/u-boot-spl.lds</code>， <code>obj</code> 在 <strong><code>1310 行</code></strong> 编译 <code>u-boot-spl.bin</code> 的时候赋值为 <code>obj=spl</code>，所以我们需要看 <code>u-boot/spl/u-boot-spl.lds</code> 这个文件，但是如果你之前没有编译过这个文件是没有的。这个文件是如何生成的呢？我们稍后再看，先看 lds 文件的内容：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-gas" data-lang="gas"><span style="display:flex;"><span><span style="color:#a6e22e">MEMORY</span> <span style="color:#960050;background-color:#1e0010">{</span> <span style="color:#66d9ef">.sram</span> : <span style="color:#66d9ef">ORIGIN</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#ae81ff">0x402F0400</span>, <span style="color:#66d9ef">LENGTH</span> <span style="color:#960050;background-color:#1e0010">=</span> (<span style="color:#ae81ff">0x4030B800</span> - <span style="color:#ae81ff">0x402F0400</span>) <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MEMORY</span> <span style="color:#960050;background-color:#1e0010">{</span> <span style="color:#66d9ef">.sdram</span> : <span style="color:#66d9ef">ORIGIN</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#ae81ff">0x80a00000</span>, <span style="color:#66d9ef">LENGTH</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#ae81ff">0x80000</span> <span style="color:#960050;background-color:#1e0010">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">OUTPUT_FORMAT</span>(<span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">elf32-littlearm</span><span style="color:#960050;background-color:#1e0010">&#34;</span>, <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">elf32-littlearm</span><span style="color:#960050;background-color:#1e0010">&#34;</span>, <span style="color:#960050;background-color:#1e0010">&#34;</span><span style="color:#66d9ef">elf32-littlearm</span><span style="color:#960050;background-color:#1e0010">&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">OUTPUT_ARCH</span>(<span style="color:#66d9ef">arm</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ENTRY</span>(<span style="color:#66d9ef">_start</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">SECTIONS</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">{</span>
+</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">.text</span> :
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">__start</span> <span style="color:#960050;background-color:#1e0010">=</span> .<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  *(.<span style="color:#66d9ef">vectors</span>)
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">arch</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#66d9ef">arm</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#66d9ef">cpu</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#66d9ef">armv7</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#66d9ef">start.o</span> (.<span style="color:#66d9ef">text</span>)
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">*(</span><span style="color:#a6e22e">.text</span>*)
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">}</span> <span style="color:#960050;background-color:#1e0010">&gt;</span><span style="color:#a6e22e">.sram</span>
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">.</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#a6e22e">ALIGN</span>(<span style="color:#ae81ff">4</span>)<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#66d9ef">.rodata</span> : <span style="color:#960050;background-color:#1e0010">{</span> *(<span style="color:#66d9ef">SORT_BY_ALIGNMENT</span>(.<span style="color:#66d9ef">rodata</span>*)) <span style="color:#960050;background-color:#1e0010">}</span> <span style="color:#960050;background-color:#1e0010">&gt;</span><span style="color:#66d9ef">.sram</span>
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">.</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#a6e22e">ALIGN</span>(<span style="color:#ae81ff">4</span>)<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#66d9ef">.data</span> : <span style="color:#960050;background-color:#1e0010">{</span> *(<span style="color:#66d9ef">SORT_BY_ALIGNMENT</span>(.<span style="color:#66d9ef">data</span>*)) <span style="color:#960050;background-color:#1e0010">}</span> <span style="color:#960050;background-color:#1e0010">&gt;</span><span style="color:#66d9ef">.sram</span>
+</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">.u_boot_list</span> : <span style="color:#960050;background-color:#1e0010">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">KEEP</span>(*(<span style="color:#66d9ef">SORT</span>(.<span style="color:#66d9ef">u_boot_list</span>*)))<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#960050;background-color:#1e0010">}</span> <span style="color:#960050;background-color:#1e0010">&gt;</span><span style="color:#66d9ef">.sram</span>
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">.</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#a6e22e">ALIGN</span>(<span style="color:#ae81ff">4</span>)<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#66d9ef">__image_copy_end</span> <span style="color:#960050;background-color:#1e0010">=</span> .<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#66d9ef">.end</span> :
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">*(</span><span style="color:#a6e22e">.__end</span>)
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">}</span> <span style="color:#960050;background-color:#1e0010">&gt;</span><span style="color:#a6e22e">.sram</span>
+</span></span><span style="display:flex;"><span> <span style="color:#a6e22e">.bss</span> :
+</span></span><span style="display:flex;"><span> <span style="color:#960050;background-color:#1e0010">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">.</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#a6e22e">ALIGN</span>(<span style="color:#ae81ff">4</span>)<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">__bss_start</span> <span style="color:#960050;background-color:#1e0010">=</span> .<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  *(.<span style="color:#66d9ef">bss</span>*)
+</span></span><span style="display:flex;"><span>  <span style="color:#960050;background-color:#1e0010">.</span> <span style="color:#960050;background-color:#1e0010">=</span> <span style="color:#a6e22e">ALIGN</span>(<span style="color:#ae81ff">4</span>)<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">__bss_end</span> <span style="color:#960050;background-color:#1e0010">=</span> .<span style="color:#75715e">;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> <span style="color:#960050;background-color:#1e0010">}</span> <span style="color:#960050;background-color:#1e0010">&gt;</span><span style="color:#66d9ef">.sdram</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">}</span>
+</span></span></code></pre></div><p>链接文件里面说明了内存布局，<code>arch/arm/cpu/armv7/start.o</code> 代码段都放在 SRAM 中，所以 <code>arch/arm/cpu/armv7/start.S</code> 就是我们要找的东西了。</p>
+<h3 id="lds-链接文件的生成">lds 链接文件的生成<a hidden class="anchor" aria-hidden="true" href="#lds-链接文件的生成">#</a></h3>
+<p><code>u-boot/spl/u-boot-spl.lds</code> 这个文件的生成在 <code>u-boot/scripts/Makefile.spl</code> 有解释:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-make" data-lang="make"><span style="display:flex;"><span><span style="color:#a6e22e">$(obj)/u-boot-spl.lds</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>LDSCRIPT<span style="color:#66d9ef">)</span> FORCE
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>call if_changed_dep,cpp_lds<span style="color:#66d9ef">)</span>
+</span></span></code></pre></div><p><code>LDSCRIPT</code> 的定义：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-make" data-lang="make"><span style="display:flex;"><span><span style="color:#75715e"># Linker Script
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">ifdef</span> <span style="color:#960050;background-color:#1e0010">CONFIG_SPL_LDSCRIPT</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># need to strip off double quotes
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>LDSCRIPT <span style="color:#f92672">:=</span> <span style="color:#66d9ef">$(</span>addprefix <span style="color:#66d9ef">$(</span>srctree<span style="color:#66d9ef">)</span>/,<span style="color:#66d9ef">$(</span>CONFIG_SPL_LDSCRIPT:<span style="color:#e6db74">&#34;%&#34;</span><span style="color:#f92672">=</span>%<span style="color:#66d9ef">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>wildcard <span style="color:#66d9ef">$(</span>LDSCRIPT<span style="color:#66d9ef">))</span><span style="color:#960050;background-color:#1e0010">,)</span>
+</span></span><span style="display:flex;"><span>	LDSCRIPT <span style="color:#f92672">:=</span> <span style="color:#66d9ef">$(</span>srctree<span style="color:#66d9ef">)</span>/board/<span style="color:#66d9ef">$(</span>BOARDDIR<span style="color:#66d9ef">)</span>/u-boot-spl.lds
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>wildcard <span style="color:#66d9ef">$(</span>LDSCRIPT<span style="color:#66d9ef">))</span><span style="color:#960050;background-color:#1e0010">,)</span>
+</span></span><span style="display:flex;"><span>	LDSCRIPT <span style="color:#f92672">:=</span> <span style="color:#66d9ef">$(</span>srctree<span style="color:#66d9ef">)</span>/<span style="color:#66d9ef">$(</span>CPUDIR<span style="color:#66d9ef">)</span>/u-boot-spl.lds
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>wildcard <span style="color:#66d9ef">$(</span>LDSCRIPT<span style="color:#66d9ef">))</span><span style="color:#960050;background-color:#1e0010">,)</span>
+</span></span><span style="display:flex;"><span>	LDSCRIPT <span style="color:#f92672">:=</span> <span style="color:#66d9ef">$(</span>srctree<span style="color:#66d9ef">)</span>/arch/<span style="color:#66d9ef">$(</span>ARCH<span style="color:#66d9ef">)</span>/cpu/u-boot-spl.lds
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">ifeq</span> <span style="color:#960050;background-color:#1e0010">(</span><span style="color:#66d9ef">$(</span>wildcard <span style="color:#66d9ef">$(</span>LDSCRIPT<span style="color:#66d9ef">))</span><span style="color:#960050;background-color:#1e0010">,)</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">$(</span>error could not find linker script<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">endif</span>
+</span></span></code></pre></div><p>可见 <code>Makefile.spl</code> 文件中先是判断有没有指定的 lds 文件，如果没有指定的，就查找 board 文件夹中目标板目录下面有没有 lds 文件，如果没有就查找相应的 cpu 目录，因为我们目标器件是 am335x，所以发现有 <code>u-boot/arch/arm/cpu/armv7/am33xx/u-boot-spl.lds</code> 再通过 <code>cpp_lds</code> 命令编译成，<code>cpp_lds</code> 是一组命令的集合，具体定义还是在 <code>Makefile.spl</code> 文件中，我们查看 <code>u-boot/arch/arm/cpu/armv7/am33xx/u-boot-spl.lds</code> 也发现 MLO 文件代码是在 <code>start.S</code> 文件中。</p>
+<h3 id="mlo-程序分析">MLO 程序分析<a hidden class="anchor" aria-hidden="true" href="#mlo-程序分析">#</a></h3>
+<p>查看 <code>start.S</code> 分析下 MLO 程序具体的执行流程，MLO 的 makefile 会根据 <code>CONFIG_SPL_BUILD</code> 编译不同的源文件，同样的在源码内也通过 <code>CONFIG_SPL_BUILD</code> 控制不同的代码执行，前面一部分 MLO 文件和 U-Boot 是类似的，进入到 <code>_main</code> 函数中两个程序的功能就开始出现差异了：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>reset <span style="color:#75715e">//(arch/arm/cpu/armv7/start.S)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>save_boot_params_ret <span style="color:#75715e">//(arch/arm/cpu/armv7/start.S)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#f92672">|-</span> disable interrupts 
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|-</span> cpu_init_cp15 <span style="color:#75715e">//(arch/arm/cpu/armv7/start.S)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> Invalidate L1 I<span style="color:#f92672">/</span>D
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> disable MMU stuff and caches
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|-</span> cpu_init_crit <span style="color:#75715e">//(arch/arm/cpu/armv7/start.S)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> lowlevel_init <span style="color:#75715e">//(arch/arm/cpu/armv7/lowlevel_init.S)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#f92672">|</span>       <span style="color:#f92672">|-</span> Setup a temporary stack
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span>       <span style="color:#f92672">|-</span> Set up global data 
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span>       <span style="color:#f92672">|-</span> s_init <span style="color:#75715e">//(arch/arm/cpu/armv7/am33xx/board.c)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#f92672">|</span>           <span style="color:#f92672">|-</span> watchdog_disable
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span>           <span style="color:#f92672">|-</span> set_uart_mux_conf
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span>           <span style="color:#f92672">|-</span> setup_clocks_for_console
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|</span>           <span style="color:#f92672">|-</span> uart_soft_reset
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">|-</span> _main <span style="color:#75715e">//(arch/arm/lib/crt0.S)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  	  
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|</span>(MLO)<span style="color:#960050;background-color:#1e0010">如果是</span> MLO <span style="color:#960050;background-color:#1e0010">文件</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|-</span> board_init_f <span style="color:#75715e">//(arch/arm/cpu/armv7/am33xx/board.c)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> board_early_init_f <span style="color:#75715e">//(arch/arm/cpu/armv7/am33xx/board.c)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">|</span>   <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> prcm_init
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|</span>   <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> set_mux_conf_regs
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> sdram_init <span style="color:#75715e">//(board/ti/am335x/board.c) 初始化 DDR
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">|-</span> spl_relocate_stack_gd
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|-</span> board_init_r <span style="color:#75715e">//(common/spl/spl.c)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>          <span style="color:#f92672">|-</span> ...
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">|-</span> spl_load_image <span style="color:#75715e">//根据不同的启动方式加载 u-boot 镜像，
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>          <span style="color:#f92672">|-</span> jump_to_image_no_args <span style="color:#75715e">//进入u-boot代码运行
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  	  
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|</span>(U<span style="color:#f92672">-</span>Boot)<span style="color:#960050;background-color:#1e0010">如果是</span>U<span style="color:#f92672">-</span>Boot <span style="color:#960050;background-color:#1e0010">镜像</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|-</span> board_init_f <span style="color:#75715e">//(common/board_f.c)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> ...
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> initcall_run_list(init_sequence_f)   
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|</span>   <span style="color:#f92672">|-</span> ...   
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|</span>   
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|-</span> relocate_code <span style="color:#75715e">//(arch/arm/lib/relocate.S) 代码重定位
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">|-</span> relocate_vectors <span style="color:#75715e">//(arch/arm/lib/relocate.S) 向量表重定义
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#f92672">|-</span> Set up final (full) environment 
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">|-</span> board_init_r <span style="color:#75715e">//(common/board_r.c)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>          <span style="color:#f92672">|-</span> initcall_run_list(init_sequence_r)<span style="color:#75715e">//初始化各种外设
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>              <span style="color:#f92672">|-</span> main_loop()
+</span></span></code></pre></div><p>当 U-Boot 重定位好代码、向量表之后，运行 <code>board_init_r </code> 函数，此函数会调用 <code>init_sequence_r</code> 列表里面的函数初始化各种外设驱动，最后在 <code>main_loop()</code> 函数中运行，U-Boot 有个 <code>bootdelay</code> 延时启动，如果不手动停止 U-Boot 会自动运行 <code>bootcmd</code> 包含的命令。</p>
+<p><strong>内核引导这部分放在另外一篇文章详细讲解。</strong></p>
+<h2 id="u-boot-编译">U-Boot 编译<a hidden class="anchor" aria-hidden="true" href="#u-boot-编译">#</a></h2>
+<h3 id="编译-u-boot">编译 U-Boot<a hidden class="anchor" aria-hidden="true" href="#编译-u-boot">#</a></h3>
+<p>编译 U－Boot 前我们需要安装交叉编译器：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span># sudo apt-get install gcc-arm-linux-gnueabihf
+</span></span></code></pre></div><p>下载 U-Boot 源码：</p>
+<pre tabindex="0"><code># git clone git://git.denx.de/u-boot.git 
+</code></pre><p>因为 U-Boot 官方已经支持了 Beaglebone Black 所以配置文件也已经自带了，编译输入如下命令：</p>
+<pre tabindex="0"><code># make distclean
+# make am335x_boneblack_defconfig
+# ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- make
+</code></pre><p>片刻后会生成 <code>MLO</code> 和 <code>u-boot.img</code> 文件。</p>
+<h3 id="配置-u-boot-参数">配置 U-Boot 参数<a hidden class="anchor" aria-hidden="true" href="#配置-u-boot-参数">#</a></h3>
+<p>有两种方式可以配置 U-Boot 的一些参数，分别是 <code>uEnv.txt</code> 和 <code>boot.src</code> 文件。
+U-Boot 启动的时候会在启动分区寻找这两个文件。</p>
+<blockquote>
+<p>boot.scr: This file is a U-Boot script. It contains instructions for U-Boot. Using these instruction, the kernel is loaded into memory, and (optionally) a ramdisk is loaded. boot.scr can also pass parameters to the kernel. This file is a compiled script, and cannot be edited directly. In some cases, boot.scr loads further instructions and configuration parameters from a text file.</p>
+</blockquote>
+<p>uEnv.txt: A file with additional boot parameters. This file can be read by boot.scr, or by the boot sequence if there is no script file. uEnv.txt is a regular text file that can be edited. This file should have Unix line ending, so a compatible program must be used when editing this file.</p>
+<p>U-Boot 启动的时候如果不打断会调用 <code>bootcmd</code> 包含的命令来执行，通常 <code>bootcmd</code> 会调用 bootscript 脚本也就是 <code>boot.scr</code> 里面的命令进行执行， <code>boot.scr</code> 通常也会先读取 <code>uEnv.txt</code> 确定额外参数，因为 <code>boot.src</code> 文件必须通过 <code>boot.cmd</code> 文件编译而来， <code>uEnv.txt</code> 则是可以任意编辑，这样可配置性就大大提高了。如果没有 <code>boot.src</code> 文件，U-Boot 有默认配置的 <code>bootcmd</code> 命令。</p>
+<p>在 Beagelbone Black 中我们不需要额外的 <code>boot.scr</code> 文件，用默认的命令即可，默认的命令为：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-u-boot/include/configs/am335x_evm.h" data-lang="u-boot/include/configs/am335x_evm.h"><span style="display:flex;"><span><span style="color:#75715e">#define CONFIG_BOOTCOMMAND \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	&#34;run findfdt; &#34; \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	&#34;run distro_bootcmd&#34;
+</span></span></span></code></pre></div><p><code>run distro_bootcmd</code> 最终会调用 <code>run mmcboot</code> 命令加载 <code>uEnv.txt</code> 文件，并且会运行 <code>uEnv.txt</code> 文件里面 <code>uenvcmd</code> 指代的命令。</p>
+<p><code>uEnv.txt</code> 从网络启动例子：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-uEnv.txt" data-lang="uEnv.txt"><span style="display:flex;"><span>console=ttyO0,115200n8
+</span></span><span style="display:flex;"><span>ipaddr=192.168.23.2
+</span></span><span style="display:flex;"><span>serverip=192.168.23.1
+</span></span><span style="display:flex;"><span>rootpath=/exports/rootfs
+</span></span><span style="display:flex;"><span>netargs=setenv bootargs console=${console} ${optargs} root=/dev/nfs nfsroot=${serverip}:${rootpath},${nfsopts} rw ip=${ipaddr}:${serverip}:192.168.23.1:255.255.255.0:beaglebone:eth0:none:192.168.23.1
+</span></span><span style="display:flex;"><span>netboot=echo Booting from network ...; tftp ${loadaddr} ${bootfile}; tftp ${fdtaddr} ${fdtfile}; run netargs; bootz ${loadaddr} - ${fdtaddr}
+</span></span><span style="display:flex;"><span>uenvcmd=run netboot
+</span></span></code></pre></div><h2 id="制作-u-boot-的-sd-启动卡">制作 U-Boot 的 SD 启动卡<a hidden class="anchor" aria-hidden="true" href="#制作-u-boot-的-sd-启动卡">#</a></h2>
+<p>制作 SD 启动卡之前首先需要为 SD 卡分区， ROM Code 启动的时候如果是从 MMC 设备加载启动代码，ROM Code 会从第一个活动分区寻找名为 &ldquo;MLO&rdquo; 的文件，并且此分区必须为 FAT文件系统。所以制作 U-Boot 的启动卡只需要一个带有 MLO 和 U-Boot 镜像的 FAT 格式的 SD 卡，<strong>如果需要启动 Linux 内核还需要别的分区</strong>，我们以后再讲。</p>
+<p><strong>有两种方式可以制作包含 U-Boot 的可启动的 SD 卡，一种是用 RAW Mode 的方式，还有一种是用 FTA 的方式。</strong></p>
+<p>RAW Mode 和烧写方式在这篇文章里面有讲：<a href="http://jexbat.com/2016/BeagleBone-Image/">解析 BeagleBone Black 官方镜像</a>。</p>
+<p>FTA 模式下只要建立一个 FTA 分区再把 MLO 和 uboot.img 文件拷贝进去即可。</p>
+<p>我是使用的 USB 读卡器，插入后 Linux <code>/dev/</code> 目录会显示 <code>/dev/sd*</code> 设备，我这里多出两个设备分别显示 <code>/dev/sdb</code> 和 <code>/dev/sdb1</code> ，其中 <code>/dev/sdb</code> 表示一整个物理磁盘， <code>/dev/sdb1</code> 表示的是具体的分区。</p>
+<p>使用命令 <code>sudo fdisk /dev/sdb</code> 管理磁盘:</p>
+<p><code>a</code> : toggle a bootable flag（设置或取消启动表示）</p>
+<p><code>b</code> : edit bsd disklabel（编辑 bsd disklabel)</p>
+<p><code>c</code> : toggle the dos compatibility flag</p>
+<p><code>d</code> : delete a partition （删除一个分区）</p>
+<p><code>l</code> : list known partition types （列出已知的分区类型）</p>
+<p><code>m</code> : print this menu （打印次列表）</p>
+<p><code>n</code> : add a new partition （增加一个新分区）</p>
+<p><code>o</code> : create a new empty DOS partition table （建立一个新的空 DOS 分区表）</p>
+<p><code>p</code> : print the partition table （打印分区表）</p>
+<p><code>q</code> : quit without saving changes （不保存退出）</p>
+<p><code>s</code> : create a new empty Sun disklabel</p>
+<p><code>t</code> : change a partition&rsquo;s system id</p>
+<p><code>u</code> : change display/entry units</p>
+<p><code>v</code> : verify the partition table （验证分区表）</p>
+<p><code>w</code> : write table to disk and exit （把分区表写入磁盘）</p>
+<p><code>x</code> : extra functionality (experts only) （额外的功能）</p>
+<p>新建启动分区：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: p
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Disk /dev/sdb: <span style="color:#ae81ff">7746</span> MB, <span style="color:#ae81ff">7746879488</span> bytes
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">24</span> heads, <span style="color:#ae81ff">20</span> sectors/track, <span style="color:#ae81ff">31522</span> cylinders, total <span style="color:#ae81ff">15130624</span> sectors
+</span></span><span style="display:flex;"><span>Units <span style="color:#f92672">=</span> sectors of <span style="color:#ae81ff">1</span> * 512 <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Sector size <span style="color:#f92672">(</span>logical/physical<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>I/O size <span style="color:#f92672">(</span>minimum/optimal<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Disk identifier: 0x00000000
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   Device Boot      Start         End      Blocks   Id  System
+</span></span><span style="display:flex;"><span>/dev/sdb1   *        <span style="color:#ae81ff">2048</span>    <span style="color:#ae81ff">15130623</span>     <span style="color:#ae81ff">7564288</span>    c  W95 FAT32 <span style="color:#f92672">(</span>LBA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: m
+</span></span><span style="display:flex;"><span>Command action
+</span></span><span style="display:flex;"><span>   a   toggle a bootable flag
+</span></span><span style="display:flex;"><span>   b   edit bsd disklabel
+</span></span><span style="display:flex;"><span>   c   toggle the dos compatibility flag
+</span></span><span style="display:flex;"><span>   d   delete a partition
+</span></span><span style="display:flex;"><span>   l   list known partition types
+</span></span><span style="display:flex;"><span>   m   print this menu
+</span></span><span style="display:flex;"><span>   n   add a new partition
+</span></span><span style="display:flex;"><span>   o   create a new empty DOS partition table
+</span></span><span style="display:flex;"><span>   p   print the partition table
+</span></span><span style="display:flex;"><span>   q   quit without saving changes
+</span></span><span style="display:flex;"><span>   s   create a new empty Sun disklabel
+</span></span><span style="display:flex;"><span>   t   change a partition<span style="color:#960050;background-color:#1e0010">&#39;</span>s system id
+</span></span><span style="display:flex;"><span>   u   change display/entry units
+</span></span><span style="display:flex;"><span>   v   verify the partition table
+</span></span><span style="display:flex;"><span>   w   write table to disk and exit
+</span></span><span style="display:flex;"><span>   x   extra functionality <span style="color:#f92672">(</span>experts only<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: d
+</span></span><span style="display:flex;"><span>Selected partition <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: p
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Disk /dev/sdb: <span style="color:#ae81ff">7746</span> MB, <span style="color:#ae81ff">7746879488</span> bytes
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">24</span> heads, <span style="color:#ae81ff">20</span> sectors/track, <span style="color:#ae81ff">31522</span> cylinders, total <span style="color:#ae81ff">15130624</span> sectors
+</span></span><span style="display:flex;"><span>Units <span style="color:#f92672">=</span> sectors of <span style="color:#ae81ff">1</span> * 512 <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Sector size <span style="color:#f92672">(</span>logical/physical<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>I/O size <span style="color:#f92672">(</span>minimum/optimal<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Disk identifier: 0x00000000
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   Device Boot      Start         End      Blocks   Id  System
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: n
+</span></span><span style="display:flex;"><span>Partition type:
+</span></span><span style="display:flex;"><span>   p   primary <span style="color:#f92672">(</span><span style="color:#ae81ff">0</span> primary, <span style="color:#ae81ff">0</span> extended, <span style="color:#ae81ff">4</span> free<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>   e   extended
+</span></span><span style="display:flex;"><span>Select <span style="color:#f92672">(</span>default p<span style="color:#f92672">)</span>: p
+</span></span><span style="display:flex;"><span>Partition number <span style="color:#f92672">(</span>1-4, default 1<span style="color:#f92672">)</span>: 
+</span></span><span style="display:flex;"><span>Using default value <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>First sector <span style="color:#f92672">(</span>2048-15130623, default 2048<span style="color:#f92672">)</span>: 
+</span></span><span style="display:flex;"><span>Using default value <span style="color:#ae81ff">2048</span>
+</span></span><span style="display:flex;"><span>Last sector, +sectors or +size<span style="color:#f92672">{</span>K,M,G<span style="color:#f92672">}</span> <span style="color:#f92672">(</span>2048-15130623, default 15130623<span style="color:#f92672">)</span>: 
+</span></span><span style="display:flex;"><span>Using default value <span style="color:#ae81ff">15130623</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: p
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Disk /dev/sdb: <span style="color:#ae81ff">7746</span> MB, <span style="color:#ae81ff">7746879488</span> bytes
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">24</span> heads, <span style="color:#ae81ff">20</span> sectors/track, <span style="color:#ae81ff">31522</span> cylinders, total <span style="color:#ae81ff">15130624</span> sectors
+</span></span><span style="display:flex;"><span>Units <span style="color:#f92672">=</span> sectors of <span style="color:#ae81ff">1</span> * 512 <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Sector size <span style="color:#f92672">(</span>logical/physical<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>I/O size <span style="color:#f92672">(</span>minimum/optimal<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Disk identifier: 0x00000000
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   Device Boot      Start         End      Blocks   Id  System
+</span></span><span style="display:flex;"><span>/dev/sdb1            <span style="color:#ae81ff">2048</span>    <span style="color:#ae81ff">15130623</span>     <span style="color:#ae81ff">7564288</span>   <span style="color:#ae81ff">83</span>  Linux
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: t
+</span></span><span style="display:flex;"><span>Selected partition <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Hex code <span style="color:#f92672">(</span>type L to list codes<span style="color:#f92672">)</span>: c
+</span></span><span style="display:flex;"><span>Changed system type of partition <span style="color:#ae81ff">1</span> to c <span style="color:#f92672">(</span>W95 FAT32 <span style="color:#f92672">(</span>LBA<span style="color:#f92672">))</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: a
+</span></span><span style="display:flex;"><span>Partition number <span style="color:#f92672">(</span>1-4<span style="color:#f92672">)</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: p
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Disk /dev/sdb: <span style="color:#ae81ff">7746</span> MB, <span style="color:#ae81ff">7746879488</span> bytes
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">24</span> heads, <span style="color:#ae81ff">20</span> sectors/track, <span style="color:#ae81ff">31522</span> cylinders, total <span style="color:#ae81ff">15130624</span> sectors
+</span></span><span style="display:flex;"><span>Units <span style="color:#f92672">=</span> sectors of <span style="color:#ae81ff">1</span> * 512 <span style="color:#f92672">=</span> <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Sector size <span style="color:#f92672">(</span>logical/physical<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>I/O size <span style="color:#f92672">(</span>minimum/optimal<span style="color:#f92672">)</span>: <span style="color:#ae81ff">512</span> bytes / <span style="color:#ae81ff">512</span> bytes
+</span></span><span style="display:flex;"><span>Disk identifier: 0x00000000
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   Device Boot      Start         End      Blocks   Id  System
+</span></span><span style="display:flex;"><span>/dev/sdb1   *        <span style="color:#ae81ff">2048</span>    <span style="color:#ae81ff">15130623</span>     <span style="color:#ae81ff">7564288</span>    c  W95 FAT32 <span style="color:#f92672">(</span>LBA<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Command <span style="color:#f92672">(</span>m <span style="color:#66d9ef">for</span> help<span style="color:#f92672">)</span>: w
+</span></span><span style="display:flex;"><span>The partition table has been altered!
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Calling ioctl<span style="color:#f92672">()</span> to re-read partition table.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>WARNING: If you have created or modified any DOS 6.x
+</span></span><span style="display:flex;"><span>partitions, please see the fdisk manual page <span style="color:#66d9ef">for</span> additional
+</span></span><span style="display:flex;"><span>information.
+</span></span><span style="display:flex;"><span>Syncing disks.
+</span></span></code></pre></div><p>建立好新的分区之后需要命名并格式化：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span><span style="color:#75715e"># sudo mkfs.vfat -F 32 -n boot /dev/sdb1</span>
+</span></span></code></pre></div><p>格式化之后挂载磁盘并把 <code>MLO</code> 文件和 <code>u-boot.img</code> 文件拷贝进去：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span><span style="color:#75715e"># sudo mount /dev/sdb1 /media/jg/boot </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># sudo cp MLO /media/jg/boot/MLO</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># ls /media/jg/boot             </span>
+</span></span><span style="display:flex;"><span>MLO
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># sudo cp u-boot.img /media/jg/boot/u-boot.img</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># ls /media/jg/boot </span>
+</span></span><span style="display:flex;"><span>MLO  u-boot.img
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># sync </span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># sudo umount /media/jg/boot </span>
+</span></span></code></pre></div><p>接着把 SD 卡插入 Beaglebone Black 并且按着 S2 按钮上电，从串口打印出的信息我们可以看到 U-Boot 已经可以正常启动了：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>U-Boot SPL 2016.03-rc2-00084-g595af9d (Feb 29 2016 - 22:21:20)
+</span></span><span style="display:flex;"><span>Trying to boot from MMC
+</span></span><span style="display:flex;"><span>Card doesn&#39;t support part_switch
+</span></span><span style="display:flex;"><span>MMC partition switch failed
+</span></span><span style="display:flex;"><span>*** Warning - MMC partition switch failed, using default environment
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>reading u-boot.img
+</span></span><span style="display:flex;"><span>reading u-boot.img
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>U-Boot 2016.03-rc2-00084-g595af9d (Feb 29 2016 - 22:21:20 +0800)
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>       Watchdog enabled
+</span></span><span style="display:flex;"><span>I2C:   ready
+</span></span><span style="display:flex;"><span>DRAM:  512 MiB
+</span></span><span style="display:flex;"><span>MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+</span></span><span style="display:flex;"><span>*** Warning - bad CRC, using default environment
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>Net:   &lt;ethaddr&gt; not set. Validating first E-fuse MAC
+</span></span><span style="display:flex;"><span>cpsw, usb_ether
+</span></span><span style="display:flex;"><span>Press SPACE to abort autoboot in 2 seconds
+</span></span><span style="display:flex;"><span>switch to partitions #0, OK
+</span></span><span style="display:flex;"><span>mmc0 is current device
+</span></span><span style="display:flex;"><span>Scanning mmc 0:1...
+</span></span><span style="display:flex;"><span>switch to partitions #0, OK
+</span></span><span style="display:flex;"><span>mmc0 is current device
+</span></span><span style="display:flex;"><span>SD/MMC found on device 0
+</span></span><span style="display:flex;"><span>reading boot.scr
+</span></span><span style="display:flex;"><span>** Unable to read file boot.scr **
+</span></span><span style="display:flex;"><span>reading uEnv.txt
+</span></span><span style="display:flex;"><span>** Unable to read file uEnv.txt **
+</span></span><span style="display:flex;"><span>** File not found /boot/zImage **
+</span></span><span style="display:flex;"><span>switch to partitions #0, OK
+</span></span><span style="display:flex;"><span>mmc1(part 0) is current device
+</span></span><span style="display:flex;"><span>Scanning mmc 1:1...
+</span></span><span style="display:flex;"><span>switch to partitions #0, OK
+</span></span><span style="display:flex;"><span>mmc1(part 0) is current device
+</span></span><span style="display:flex;"><span>SD/MMC found on device 1
+</span></span><span style="display:flex;"><span>reading boot.scr
+</span></span><span style="display:flex;"><span>** Unable to read file boot.scr **
+</span></span><span style="display:flex;"><span>reading uEnv.txt
+</span></span><span style="display:flex;"><span>** Unable to read file uEnv.txt **
+</span></span><span style="display:flex;"><span>** File not found /boot/zImage **
+</span></span><span style="display:flex;"><span>#<span style="color:#75715e"># Error: &#34;bootcmd_nand0&#34; not defined</span>
+</span></span><span style="display:flex;"><span>cpsw Waiting for PHY auto negotiation to complete......... TIMEOUT !
+</span></span><span style="display:flex;"><span>BOOTP broadcast 1
+</span></span><span style="display:flex;"><span>BOOTP broadcast 2
+</span></span><span style="display:flex;"><span>BOOTP broadcast 3
+</span></span><span style="display:flex;"><span>BOOTP broadcast 4
+</span></span></code></pre></div><p>启动之后，前面一段打印信息是 MLO 程序打印出来的，读取 U-Boot 之后开始运行完整的 U-Boot，之后程序扫描各个设备读取 <code>boot.scr</code> 和 <code>uEnv.txt</code> 文件，接着再读取是否有 Linux 内核可以运行。</p>
+<h2 id="参考资料">参考资料<a hidden class="anchor" aria-hidden="true" href="#参考资料">#</a></h2>
+<ul>
+<li><a href="http://blog.csdn.net/zy812248258/article/details/39120799">Beaglebone Black——制作自己的SD启动卡</a></li>
+<li><a href="http://www.twam.info/hardware/beaglebone-black/u-boot-on-beaglebone-black">U-Boot on BeagleBone Black</a></li>
+<li><a href="http://processors.wiki.ti.com/index.php/AM335x_U-Boot_User's_Guide#U-Boot">AM335x U-Boot User&rsquo;s Guide</a></li>
+<li><a href="http://blog.kfatso.com/articles/2015/08/15/pandaboard-bootload-process/">Pandaboard bootload(uboot) 启动流程探究</a></li>
+<li><a href="http://blog.csdn.net/zsy2020314/article/details/9824035">u-boot启动流程</a></li>
+</ul>
+<hr>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://JesseGuoX.github.io/tinyx/tags/BeagleBone/">BeagleBone</a></li>
+      <li><a href="https://JesseGuoX.github.io/tinyx/tags/U-Boot/">U-Boot</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://JesseGuoX.github.io/tinyx/post/BeagleBone-Image/">
+    <span class="title">« Prev Page</span>
+    <br>
+    <span>解析 BeagleBone Black 官方镜像</span>
+  </a>
+  <a class="next" href="https://JesseGuoX.github.io/tinyx/post/BBB-bootmode/">
+    <span class="title">Next Page »</span>
+    <br>
+    <span>BeagleBone Black 从零到一 (1 启动流程)</span>
+  </a>
+</nav>
+
+  </footer><div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+  const gitalk = new Gitalk({
+    clientID: '',
+    clientSecret: '',
+    repo: '',
+    owner: '',
+    admin: [''],
+    id: location.pathname, 
+    distractionFreeMode: false 
+  });
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('gitalk-container').innerHTML = 'Gitalk comments not available by default when the website is previewed locally.';
+      return;
+    }
+    gitalk.render('gitalk-container');
+  })();
+</script>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://JesseGuoX.github.io/tinyx">TinyX</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

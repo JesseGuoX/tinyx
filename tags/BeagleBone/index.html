@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>BeagleBone | TinyX</title>
+<meta name="keywords" content="">
+<meta name="description" content="ExampleSite description">
+<meta name="author" content="X">
+<link rel="canonical" href="https://JesseGuoX.github.io/tinyx/tags/BeagleBone/">
+<link crossorigin="anonymous" href="/tinyx/assets/css/stylesheet.min.48a18943c2fc15c38a372b8dde1f5e5dc0bc64fa6cb90f5a817d2f8c76b7f3ae.css" integrity="sha256-SKGJQ8L8FcOKNyuN3h9eXcC8ZPpsuQ9agX0vjHa3864=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="16x16" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="apple-touch-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="mask-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="https://JesseGuoX.github.io/tinyx/tags/BeagleBone/index.xml">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="BeagleBone" />
+<meta property="og:description" content="ExampleSite description" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://JesseGuoX.github.io/tinyx/tags/BeagleBone/" /><meta property="og:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="og:site_name" content="ExampleSite" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
+
+<meta name="twitter:title" content="BeagleBone"/>
+<meta name="twitter:description" content="ExampleSite description"/>
+
+</head>
+
+<body class="list" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://JesseGuoX.github.io/tinyx" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/archives" title="Archive">
+                    <span>Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/categories/" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+<header class="page-header"><div class="breadcrumbs"><a href="https://JesseGuoX.github.io/tinyx">Home</a>&nbsp;»&nbsp;<a href="https://JesseGuoX.github.io/tinyx/tags/">Tags</a></div>
+  <h1>BeagleBone</h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2>BeagleBone Black 从零到一 (3 Linux 镜像、initramfs、Device Tree及根文件系统)
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>基于 Linux 3.8
+内核启动 BeagleBone Black 从零到一 (1 MLO、U-Boot) 这篇文章里讲到 U-Boot 启动之后会运行 uEnv.txt 文件里面 uenvcmd 指代的命令，我们也通常把加载镜像文件等命令写在这里。
+U-Boot 有很多方法能启动内核，通常使用的是 bootm 或者 bootz 命令：
+U-Boot# help bootz bootz - boot Linux zImage image from memory  Usage: bootz [addr [initrd[:size]] [fdt]]  - boot Linux zImage stored in memory  The argument &#39;initrd&#39; is optional and specifies the address  of the initrd in memory. The optional argument &#39;:size&#39; allows  specifying the size of RAW initrd....</p>
+  </section>
+  <footer class="entry-footer"><span title='2016-04-17 15:06:55 +0000 UTC'>April 17, 2016</span>&nbsp;·&nbsp;X</footer>
+  <a class="entry-link" aria-label="post link to BeagleBone Black 从零到一 (3 Linux 镜像、initramfs、Device Tree及根文件系统)" href="https://JesseGuoX.github.io/tinyx/post/BBB-Prepare-booting/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2>解析 BeagleBone Black 官方镜像
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>BeagleBone 官方镜像： BeagleBoard.org Latest Firmware Images
+下载推荐的镜像: bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz
+.xz 文件解压：
+xz -d bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz 得到 .img 文件。
+挂载镜像 在 Linux 下挂载 .img 文件，
+可见直接挂载的话会出现：mount: you must specify the filesystem type。 首先，要说明一下的是，这情况是由于 img 文件的开头包含了 MBR，以致于系统无法识别。img 文件相当于一个包含操作系统的硬盘，而我们只需要挂载它的文件系统部分，所以需要绕过 MBR。
+绕过 MBR 挂载文件系统有两种方法。
+第一种： 首先使用 fdisk 查看分区信息：
+看到第一个分区从第 2048 个扇区开始， Units = sectors of 1 * 512 = 512 bytes，Unit ＝ 2048 ＊ 512 ＝ 1048576，所以我们偏移 1028576 个字节挂载第一个分区； 第二个分区从第 198656 个扇区开始，Unit = 198656 * 512 = 101711872，偏移 101711872 个字节挂载第二个分区；...</p>
+  </section>
+  <footer class="entry-footer"><span title='2016-03-26 19:37:17 +0000 UTC'>March 26, 2016</span>&nbsp;·&nbsp;X</footer>
+  <a class="entry-link" aria-label="post link to 解析 BeagleBone Black 官方镜像" href="https://JesseGuoX.github.io/tinyx/post/BeagleBone-Image/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2>BeagleBone Black 从零到一 (2 MLO、U-Boot)
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>更新：2016-04-01
+什么是 U-Boot 熟悉嵌入式开发的应该都听过它，U-boot 就是启动系统前的一段引导程序，虽然是引导程序，但是功能非常强大。
+这一篇主要讲解如何从无到有运行 U-Boot，关于 U-Boot 引导 Linux 的部分放在另外一篇文章讲解。
+U-Boot 之前的版本以版本号命名如：0.1.0, 0.2.0 这几年改为了以时间和日期命名：U-Boot 2016.03。
+使用 git 获得 U-Boot 的源码：
+git clone git://git.denx.de/u-boot.git 目前我使用的是 2016.02 的版本。
+MLO 及其启动过程 上一篇文章，我们了解了 BeagleBone 有个 SPL 过程，就在这个时候读取 MLO 文件，MLO 文件其实是个精简版的 U-Boot，也是由 U-Boot 生成，但是功能有限，只初始化了部分资源如 DDR，然后启动 U-Boot。
+MLO 文件是如何编译出来的 分析 MLO 的编译过程之前需要知道编译原理和 Makefile 等相关知识。 我们先找找 Makefile 看看能不能找到什么。建议使用 Sublime 编辑器。用全局查找功能查找 MLO 关键字。
+找到 u-boot/scripts/Makefile.spl 文件 117行：
+MLO MLO.byteswap: $(obj)/u-boot-spl.bin FORCE 	$(call if_changed,mkimage) 可以看到 MLO 文件是由 u-boot-spl....</p>
+  </section>
+  <footer class="entry-footer"><span title='2016-03-22 20:57:50 +0000 UTC'>March 22, 2016</span>&nbsp;·&nbsp;X</footer>
+  <a class="entry-link" aria-label="post link to BeagleBone Black 从零到一 (2 MLO、U-Boot)" href="https://JesseGuoX.github.io/tinyx/post/BBB-Uboot/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2>BeagleBone Black 从零到一 (1 启动流程)
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>BeagleBone 的核心处理器是 AM3358，理解启动过程需要查看相应的数据手册。
+AM335x 有四个不同的启动阶段：
+ ROM SPL（Secondary Program Loader） U-BOOT Linux Kernel  为什么 AM335x 有多个启动阶段呢？直接从启动源加载 U-Boot 启动不是很方便？
+首先，第一步的 ROM Code 不可能太复杂，ROM大小是一个限制，最重要的还是因为其所能获取的系统信息太少，所以处理器只能使用简单的方法去寻找能完成复杂功能的代码，而后将处理器初始化工作交给它来完成。其次，SPL 也不能很复杂，因为 ROM Code 只能将它加载到处理器内部 RAM 中运行，一般处理器的内部 RAM 都要小于128KB，其大小注定其不能完成很复杂的功能，所以 SPL 需要初始化 DDR 再加更复杂的代码加载到 DDR 中运行。到了在 DDR RAM 中执行的 Bootloader（U-Boot算一个），其功能就比较完善了，此时就可以启动操作系统了。
+第一阶段：ROM Code ROM Code 是芯片上电复位之后第一块自动运行的代码。ROM Code 固化在芯片中不能被用户修改。 ROM Code 存储在片上地址 0x40000000-0x40040000 处。
+ROM Code 有两个主要的功能：
+ 配置设备并初始化主要的外设 建立堆栈 配置开门狗定时器1（设置到三分钟） 配置 PLL 和系统时钟 为下一阶段启动做准备 为下一阶段启动检查启动源（SPL） 把下一启动阶段的 bootloader 代码移动到内存中准备运行  ROM Code 针对不同的启动源有不同的启动过程，但最终还是为了把启动源的代码搬运至内部 RAM 中运行，这里我们主要解析下针对 MMC/SD 卡设备，它的启动过程是怎么样的。...</p>
+  </section>
+  <footer class="entry-footer"><span title='2016-03-09 19:56:06 +0000 UTC'>March 9, 2016</span>&nbsp;·&nbsp;X</footer>
+  <a class="entry-link" aria-label="post link to BeagleBone Black 从零到一 (1 启动流程)" href="https://JesseGuoX.github.io/tinyx/post/BBB-bootmode/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2>BeagleBone Black 从零到一 (0 硬件及环境搭建)
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>买了个 BeagleBone Black 准备从底层到应用层把整个 Linux 开发流程过一遍，并写一系列教程。
+...</p>
+  </section>
+  <footer class="entry-footer"><span title='2016-03-05 20:44:52 +0000 UTC'>March 5, 2016</span>&nbsp;·&nbsp;X</footer>
+  <a class="entry-link" aria-label="post link to BeagleBone Black 从零到一 (0 硬件及环境搭建)" href="https://JesseGuoX.github.io/tinyx/post/BBB0-Hardware/"></a>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://JesseGuoX.github.io/tinyx">TinyX</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

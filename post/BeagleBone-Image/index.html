@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>解析 BeagleBone Black 官方镜像 | TinyX</title>
+<meta name="keywords" content="BeagleBone">
+<meta name="description" content="BeagleBone 官方镜像： BeagleBoard.org Latest Firmware Images
+下载推荐的镜像: bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz
+.xz 文件解压：
+xz -d bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz 得到 .img 文件。
+挂载镜像 在 Linux 下挂载 .img 文件，
+可见直接挂载的话会出现：mount: you must specify the filesystem type。 首先，要说明一下的是，这情况是由于 img 文件的开头包含了 MBR，以致于系统无法识别。img 文件相当于一个包含操作系统的硬盘，而我们只需要挂载它的文件系统部分，所以需要绕过 MBR。
+绕过 MBR 挂载文件系统有两种方法。
+第一种： 首先使用 fdisk 查看分区信息：
+看到第一个分区从第 2048 个扇区开始， Units = sectors of 1 * 512 = 512 bytes，Unit ＝ 2048 ＊ 512 ＝ 1048576，所以我们偏移 1028576 个字节挂载第一个分区； 第二个分区从第 198656 个扇区开始，Unit = 198656 * 512 = 101711872，偏移 101711872 个字节挂载第二个分区；">
+<meta name="author" content="X">
+<link rel="canonical" href="https://JesseGuoX.github.io/tinyx/post/BeagleBone-Image/">
+<link crossorigin="anonymous" href="/tinyx/assets/css/stylesheet.min.48a18943c2fc15c38a372b8dde1f5e5dc0bc64fa6cb90f5a817d2f8c76b7f3ae.css" integrity="sha256-SKGJQ8L8FcOKNyuN3h9eXcC8ZPpsuQ9agX0vjHa3864=" rel="preload stylesheet" as="style">
+<script defer crossorigin="anonymous" src="/tinyx/assets/js/highlight.min.4dcb3c4f38462f66c6b6137227726f5543cb934cca9788f041c087e374491df2.js" integrity="sha256-Tcs8TzhGL2bGthNyJ3JvVUPLk0zKl4jwQcCH43RJHfI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<link rel="icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="16x16" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="apple-touch-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="mask-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="解析 BeagleBone Black 官方镜像" />
+<meta property="og:description" content="BeagleBone 官方镜像： BeagleBoard.org Latest Firmware Images
+下载推荐的镜像: bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz
+.xz 文件解压：
+xz -d bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz 得到 .img 文件。
+挂载镜像 在 Linux 下挂载 .img 文件，
+可见直接挂载的话会出现：mount: you must specify the filesystem type。 首先，要说明一下的是，这情况是由于 img 文件的开头包含了 MBR，以致于系统无法识别。img 文件相当于一个包含操作系统的硬盘，而我们只需要挂载它的文件系统部分，所以需要绕过 MBR。
+绕过 MBR 挂载文件系统有两种方法。
+第一种： 首先使用 fdisk 查看分区信息：
+看到第一个分区从第 2048 个扇区开始， Units = sectors of 1 * 512 = 512 bytes，Unit ＝ 2048 ＊ 512 ＝ 1048576，所以我们偏移 1028576 个字节挂载第一个分区； 第二个分区从第 198656 个扇区开始，Unit = 198656 * 512 = 101711872，偏移 101711872 个字节挂载第二个分区；" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://JesseGuoX.github.io/tinyx/post/BeagleBone-Image/" /><meta property="og:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2016-03-26T19:37:17&#43;00:00" />
+<meta property="article:modified_time" content="2016-03-26T19:37:17&#43;00:00" /><meta property="og:site_name" content="ExampleSite" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
+
+<meta name="twitter:title" content="解析 BeagleBone Black 官方镜像"/>
+<meta name="twitter:description" content="BeagleBone 官方镜像： BeagleBoard.org Latest Firmware Images
+下载推荐的镜像: bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz
+.xz 文件解压：
+xz -d bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz 得到 .img 文件。
+挂载镜像 在 Linux 下挂载 .img 文件，
+可见直接挂载的话会出现：mount: you must specify the filesystem type。 首先，要说明一下的是，这情况是由于 img 文件的开头包含了 MBR，以致于系统无法识别。img 文件相当于一个包含操作系统的硬盘，而我们只需要挂载它的文件系统部分，所以需要绕过 MBR。
+绕过 MBR 挂载文件系统有两种方法。
+第一种： 首先使用 fdisk 查看分区信息：
+看到第一个分区从第 2048 个扇区开始， Units = sectors of 1 * 512 = 512 bytes，Unit ＝ 2048 ＊ 512 ＝ 1048576，所以我们偏移 1028576 个字节挂载第一个分区； 第二个分区从第 198656 个扇区开始，Unit = 198656 * 512 = 101711872，偏移 101711872 个字节挂载第二个分区；"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Posts",
+      "item": "https://JesseGuoX.github.io/tinyx/post/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "解析 BeagleBone Black 官方镜像",
+      "item": "https://JesseGuoX.github.io/tinyx/post/BeagleBone-Image/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "解析 BeagleBone Black 官方镜像",
+  "name": "解析 BeagleBone Black 官方镜像",
+  "description": "BeagleBone 官方镜像： BeagleBoard.org Latest Firmware Images\n下载推荐的镜像: bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz\n.xz 文件解压：\nxz -d bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz 得到 .img 文件。\n挂载镜像 在 Linux 下挂载 .img 文件，\n可见直接挂载的话会出现：mount: you must specify the filesystem type。 首先，要说明一下的是，这情况是由于 img 文件的开头包含了 MBR，以致于系统无法识别。img 文件相当于一个包含操作系统的硬盘，而我们只需要挂载它的文件系统部分，所以需要绕过 MBR。\n绕过 MBR 挂载文件系统有两种方法。\n第一种： 首先使用 fdisk 查看分区信息：\n看到第一个分区从第 2048 个扇区开始， Units = sectors of 1 * 512 = 512 bytes，Unit ＝ 2048 ＊ 512 ＝ 1048576，所以我们偏移 1028576 个字节挂载第一个分区； 第二个分区从第 198656 个扇区开始，Unit = 198656 * 512 = 101711872，偏移 101711872 个字节挂载第二个分区；",
+  "keywords": [
+    "BeagleBone"
+  ],
+  "articleBody": "BeagleBone 官方镜像： BeagleBoard.org Latest Firmware Images\n下载推荐的镜像: bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz\n.xz 文件解压：\nxz -d bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz 得到 .img 文件。\n挂载镜像 在 Linux 下挂载 .img 文件，\n可见直接挂载的话会出现：mount: you must specify the filesystem type。 首先，要说明一下的是，这情况是由于 img 文件的开头包含了 MBR，以致于系统无法识别。img 文件相当于一个包含操作系统的硬盘，而我们只需要挂载它的文件系统部分，所以需要绕过 MBR。\n绕过 MBR 挂载文件系统有两种方法。\n第一种： 首先使用 fdisk 查看分区信息：\n看到第一个分区从第 2048 个扇区开始， Units = sectors of 1 * 512 = 512 bytes，Unit ＝ 2048 ＊ 512 ＝ 1048576，所以我们偏移 1028576 个字节挂载第一个分区； 第二个分区从第 198656 个扇区开始，Unit = 198656 * 512 = 101711872，偏移 101711872 个字节挂载第二个分区；\n第二种: 安装 kpartx，先把镜像挂载到 loop 设备上，然后使用 kpartx 创建分区表映射，并挂载相应的映射。\n镜像分析 从 AM335x 的启动流程可知，如果需要启动 U-Boot，FAT 启动模式下必须得有一个在 FAT 格式的活跃主分区中名为 MLO 的文件供 ROM Code 运行。但是我们分析镜像里面第一个 FAT 分区并没有发现 MLO 文件。\n 早期的 BeagleBone Black 映像会把 MLO 和 u-boot.img 放在活跃主分区（active primary partition）的 FAT 文件系统的根目录里。SD 的映像会包含两个分区，一个 FAT32 分区和一个 Linux ext3/4 分区。全功能的第二阶段 U-Boot 会包含硬编码的环境变量，它可以靠这些环境变量提供的配置进一步加载 uEnv.txt，之所以使用硬编码的环境变量和 uEnv.txt 是因为采用这种配置方式的 U-Boot 不能用 saveenv 保存环境变量。\n  最近，BeagleBone Black 采用所谓 RAW模式 的 U-Boot 配置方式。在 RAW 模式下，内置 ROM 代码会依次从 sector #0 (offset 0x00000)、sector #256 (0x20000)、sector #512 (0x40000)和sector #768 (0x60000) 这几个位置来搜索 TOC structure/Configuration Header（这个数据结构可以在TI的AM335x Technical Reference Manual中查到）。 如果你还想将MMC作为一个磁盘，那么 MMC 上就必须有一个 MBR。在这种配置下，你就不能把 U-Boot SPL/MLO放在sector #0 了（参见Wikipedia里的MBR结构）。由于前面提到 ROM 代码会顺序搜索可用的MLO，因此把 U-Boot SPL/MLO 放到0x20000 (sector #256)就可以解决这个问题。\n  随后，U-boot SPL 可以从 0x60000 进一步加载完整功能的 U-Boot。从块存储设备运行 U-Boot 的优点之一是可以保存环境变量，也就不再需要加载 uEnv.txt。\n 所以目前 Beaglebone Black 官方镜像把 MLO 和 U-Boot 数据写入在第一个分区之前的扇区内，因为我们的第一个分区的数据从 sector 2048 开始，每个 sector 为 512字节，所以足足有 1MB 的存储空间供我们使用。 当把 MLO 和 U-Boot 用 RAW Mode 写入的时候，处理器 SPL 阶段会自动判断是 RAW Mode 还是 FTA Mode 启动。\nMBR 主引导记录（Master Boot Record，缩写：MBR），又叫做主引导扇区，是计算机开机后访问硬盘时所必须要读取的首个扇区。主引导扇区记录着硬盘本身的相关信息以及硬盘各个分区的大小及位置信息，是数据信息的重要入口。 标准 MBR 结构如下图：\n使用 dd 命令提取出镜像前 2048 扇区（2048*512 字节）的数据，查看前 512 字节是否存在 MBR：\n可以看到地址 0x01BE–0x01FD 的确存在分区表，且有 MBR 有效标志 0x55AA，但是我们提取出来为 0xAA55 ，这里肯定是大小端不一致造成的。\n根据硬盘分区表结构信息分析出来的分区情况和 fdisk 工具查看的分区情况一致。\n启动代码 前面镜像分析出，MBR 占用了第一个扇区，所以启动代码 MLO 和 U-Boot 肯定存储在地址 0x20000、0x40000或0x60000处。 RAW 模式下存储也有一定格式，如果是通用设备，则 TOC structure/Configuration Header 则必须存储在第一个扇区中，并且紧跟着是 GP Header。\n The raw mode is detected by reading sectors #0, #256, #512, #768. The content of these sectors is then verified for presence of a TOC structure as described in Section 26.1.9. In the case of a GP Device, a Configuration Header (CH) must be located in the first sector followed by a GP header. The CH might be void (only containing a CHSETTINGS item for which the Valid field is zero).\n 还是分析刚刚提取出来的数据， 从地址 0x20000 开始的第一个扇区：\n看数据的确包含了 RAW Mode 的配置头。 那么这个扇区之后紧跟着就是包含 GP Header 的镜像文件数据了，从地址 0x0000 开始为数据大小，地址 0x0004 开始为要拷贝至的目标地址，0x0008 地址开始接下来就是镜像数据，结构如下：\n还是用 hexdump 分析：\n大小端转换下得到：镜像数据大小为 0x0000fe4c ＝ 65100 bytes，目标地址为 0x402f0400，此地址为 AM335x 的内部 SRAM 的地址，所以 RAM Code 会把 MLO 拷贝到内部 SRAM 运行。\nMLO 启动之后会在地址 0x60000 也就是第 0x300 扇区开始加载 U-Boot。（MLO 会分别在 RAW 模式 FAT 等模式下查找可用的 u-boot.img）。我们使用 hexdump 工具也的确能从地址 0x60000 开始发现有效数据。\nU-Boot 启动后会根据 U-Boot 配置的文件位置信息（DFU_ALT_INFO_MMC）查找可用的 uEnv.txt 文件，并运行相关的命令：\n##These are needed to be compliant with Angstrom's 2013.06.20 u-boot. loadaddr=0x82000000 fdtaddr=0x88000000 rdaddr=0x88080000 initrd_high=0xffffffff fdt_high=0xffffffff ##These are needed to be compliant with Debian 2014-05-14 u-boot. loadximage=echo debug: [/boot/vmlinuz-${uname_r}] ... ; load mmc 0:2 ${loadaddr} /boot/vmlinuz-${uname_r} loadxfdt=echo debug: [/boot/dtbs/${uname_r}/${fdtfile}] ... ;load mmc 0:2 ${fdtaddr} /boot/dtbs/${uname_r}/${fdtfile} loadxrd=echo debug: [/boot/initrd.img-${uname_r}] ... ; load mmc 0:2 ${rdaddr} /boot/initrd.img-${uname_r}; setenv rdsize ${filesize} loaduEnvtxt=load mmc 0:2 ${loadaddr} /boot/uEnv.txt ; env import -t ${loadaddr} ${filesize}; check_dtb=if test -n ${dtb}; then setenv fdtfile ${dtb};fi; loadall=run loaduEnvtxt; run check_dtb; run loadximage; run loadxrd; run loadxfdt; mmcargs=setenv bootargs console=tty0 console=${console} ${optargs} ${cape_disable} ${cape_enable} root=/dev/mmcblk0p2 rootfstype=${mmcrootfstype} ${cmdline} uenvcmd=run loadall; run mmcargs; echo debug: [${bootargs}] ... ; echo debug: [bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}] ... ; bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}; 官方镜像里面的 uEnv.txt 主要包含从哪个位置加载内核镜像的命令，U-Boot 加载文件后后会运行 uenvcmd 命令，这样就能启动 Linux 内核了。\n如何烧写 将Bootloader映像用 RAW 模式保存到eMMC/SD卡中，使用如下命令将文件写入到SD卡或者eMMC的起始位置：\n# 这里的conv=ontrunc加不加都行，因为对于块设备来说，notrunc没有作用 # 每个block为512字节，跳过256个block，写入256个block dd if=MLO of=/dev/sdb bs=512 seek=256 count=256 conv=notrunc dd if=u-boot.img of=/dev/sdb bs=512 seek=768 count=1024 conv=notrunc 如果你写入的是一个可插拔SD卡，那么用下面的命令来确保内容都确实写入到了卡中：\nsudo blockdev --flushbufs /dev/sdb 参考  主引导扇区MBR的解析 ; Beaglebone Black Notes; Linux操作系统 读取MBR信息   ",
+  "wordCount" : "543",
+  "inLanguage": "en",
+  "datePublished": "2016-03-26T19:37:17Z",
+  "dateModified": "2016-03-26T19:37:17Z",
+  "author":{
+    "@type": "Person",
+    "name": "X"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://JesseGuoX.github.io/tinyx/post/BeagleBone-Image/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "TinyX",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://JesseGuoX.github.io/tinyx" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/archives" title="Archive">
+                    <span>Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/categories/" title="Categories">
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://JesseGuoX.github.io/tinyx/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://JesseGuoX.github.io/tinyx">Home</a>&nbsp;»&nbsp;<a href="https://JesseGuoX.github.io/tinyx/post/">Posts</a></div>
+    <h1 class="post-title">
+      解析 BeagleBone Black 官方镜像
+    </h1>
+    <div class="post-meta"><span title='2016-03-26 19:37:17 +0000 UTC'>March 26, 2016</span>&nbsp;·&nbsp;X
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e6%8c%82%e8%bd%bd%e9%95%9c%e5%83%8f" aria-label="挂载镜像">挂载镜像</a><ul>
+                        
+                <li>
+                    <a href="#%e7%ac%ac%e4%b8%80%e7%a7%8d" aria-label="第一种：">第一种：</a></li>
+                <li>
+                    <a href="#%e7%ac%ac%e4%ba%8c%e7%a7%8d" aria-label="第二种:">第二种:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e9%95%9c%e5%83%8f%e5%88%86%e6%9e%90" aria-label="镜像分析">镜像分析</a><ul>
+                        
+                <li>
+                    <a href="#mbr" aria-label="MBR">MBR</a></li>
+                <li>
+                    <a href="#%e5%90%af%e5%8a%a8%e4%bb%a3%e7%a0%81" aria-label="启动代码">启动代码</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e5%a6%82%e4%bd%95%e7%83%a7%e5%86%99" aria-label="如何烧写">如何烧写</a></li>
+                <li>
+                    <a href="#%e5%8f%82%e8%80%83" aria-label="参考">参考</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>BeagleBone 官方镜像：
+<a href="https://beagleboard.org/latest-images">BeagleBoard.org Latest Firmware Images</a></p>
+<p>下载推荐的镜像:
+<code>bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz</code></p>
+<p><code>.xz</code> 文件解压：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>xz -d bone-debian-7.9-lxde-4gb-armhf-2015-11-12-4gb.img.xz
+</span></span></code></pre></div><p>得到 <code>.img</code> 文件。</p>
+<!-- raw HTML omitted -->
+<h2 id="挂载镜像">挂载镜像<a hidden class="anchor" aria-hidden="true" href="#挂载镜像">#</a></h2>
+<p>在 Linux 下挂载 <code>.img</code> 文件，</p>
+<p><img loading="lazy" src="mbr.png" alt="P1"  />
+</p>
+<p>可见直接挂载的话会出现：<code>mount: you must specify the filesystem type</code>。
+首先，要说明一下的是，这情况是由于 <code>img</code> 文件的开头包含了 <code>MBR</code>，以致于系统无法识别。<code>img</code> 文件相当于一个包含操作系统的硬盘，而我们只需要挂载它的文件系统部分，所以需要绕过 <code>MBR</code>。</p>
+<p>绕过 <code>MBR</code> 挂载文件系统有两种方法。</p>
+<h3 id="第一种">第一种：<a hidden class="anchor" aria-hidden="true" href="#第一种">#</a></h3>
+<p>首先使用 fdisk 查看分区信息：</p>
+<p><img loading="lazy" src="fdisk.png" alt="P2"  />
+</p>
+<p>看到第一个分区从第 2048 个扇区开始， <code>Units = sectors of 1 * 512 = 512 bytes</code>，Unit ＝ 2048 ＊ 512 ＝ 1048576，所以我们偏移 1028576 个字节挂载第一个分区；
+第二个分区从第 198656 个扇区开始，Unit = 198656 * 512 = 101711872，偏移 101711872 个字节挂载第二个分区；</p>
+<p><img loading="lazy" src="MountWay1.png" alt="P3"  />
+</p>
+<h3 id="第二种">第二种:<a hidden class="anchor" aria-hidden="true" href="#第二种">#</a></h3>
+<p>安装 kpartx，先把镜像挂载到 loop 设备上，然后使用 kpartx 创建分区表映射，并挂载相应的映射。</p>
+<p><img loading="lazy" src="MountWay2.png" alt="P4"  />
+</p>
+<h2 id="镜像分析">镜像分析<a hidden class="anchor" aria-hidden="true" href="#镜像分析">#</a></h2>
+<p>从 <a href="http://jexbat.com/2016/BBB-bootmode/">AM335x 的启动流程</a>可知，如果需要启动 U-Boot，FAT 启动模式下必须得有一个在 FAT 格式的活跃主分区中名为 MLO 的文件供 ROM Code 运行。但是我们分析镜像里面第一个 FAT 分区并没有发现 MLO 文件。</p>
+<blockquote>
+<p>早期的 BeagleBone Black 映像会把 MLO 和 u-boot.img 放在活跃主分区（active primary partition）的 FAT 文件系统的根目录里。SD 的映像会包含两个分区，一个 FAT32 分区和一个 Linux ext3/4 分区。全功能的第二阶段 U-Boot 会包含硬编码的环境变量，它可以靠这些环境变量提供的配置进一步加载 uEnv.txt，之所以使用硬编码的环境变量和 uEnv.txt 是因为采用这种配置方式的 U-Boot 不能用 saveenv 保存环境变量。</p>
+</blockquote>
+<blockquote>
+<p>最近，BeagleBone Black 采用所谓 <code>RAW模式</code> 的 U-Boot 配置方式。在 RAW 模式下，内置 ROM 代码会依次从 sector #0 (offset 0x00000)、sector #256 (0x20000)、sector #512 (0x40000)和sector #768 (0x60000) 这几个位置来搜索 TOC structure/Configuration Header（这个数据结构可以在TI的AM335x Technical Reference Manual中查到）。
+如果你还想将MMC作为一个磁盘，那么 MMC 上就必须有一个 MBR。在这种配置下，你就不能把 U-Boot SPL/MLO放在sector #0 了（参见Wikipedia里的MBR结构）。由于前面提到 ROM 代码会顺序搜索可用的MLO，因此把 U-Boot SPL/MLO 放到0x20000 (sector #256)就可以解决这个问题。</p>
+</blockquote>
+<blockquote>
+<p>随后，U-boot SPL 可以从 0x60000 进一步加载完整功能的 U-Boot。从块存储设备运行 U-Boot 的优点之一是可以保存环境变量，也就不再需要加载 uEnv.txt。</p>
+</blockquote>
+<p><strong>所以目前 Beaglebone Black 官方镜像把 MLO 和 U-Boot 数据写入在第一个分区之前的扇区内，因为我们的第一个分区的数据从 sector 2048 开始，每个 sector 为 512字节，所以足足有 1MB 的存储空间供我们使用。</strong>  当把 MLO 和 U-Boot 用 RAW Mode 写入的时候，处理器 SPL 阶段会自动判断是 RAW Mode 还是 FTA Mode 启动。</p>
+<h3 id="mbr">MBR<a hidden class="anchor" aria-hidden="true" href="#mbr">#</a></h3>
+<p>主引导记录（Master Boot Record，缩写：MBR），又叫做主引导扇区，是计算机开机后访问硬盘时所必须要读取的首个扇区。主引导扇区记录着硬盘本身的相关信息以及硬盘各个分区的大小及位置信息，是数据信息的重要入口。
+标准 MBR 结构如下图：</p>
+<p><img loading="lazy" src="mbr-struct.png" alt="P5"  />
+</p>
+<p>使用 <code>dd</code> 命令提取出镜像前 2048 扇区（2048*512 字节）的数据，查看前 512 字节是否存在 MBR：</p>
+<p><img loading="lazy" src="mbr-precode.png" alt="P6"  />
+</p>
+<p>可以看到地址 0x01BE&ndash;0x01FD 的确存在分区表，且有 MBR 有效标志 0x55AA，但是我们提取出来为 0xAA55 ，这里肯定是大小端不一致造成的。</p>
+<p>根据硬盘分区表结构信息分析出来的分区情况和 fdisk 工具查看的分区情况一致。</p>
+<p><img loading="lazy" src="Partition-struct.png" alt="P7"  />
+</p>
+<h3 id="启动代码">启动代码<a hidden class="anchor" aria-hidden="true" href="#启动代码">#</a></h3>
+<p>前面镜像分析出，MBR 占用了第一个扇区，所以启动代码 MLO 和 U-Boot 肯定存储在地址 <code>0x20000</code>、<code>0x40000</code>或<code>0x60000</code>处。
+RAW 模式下存储也有一定格式，如果是通用设备，则 <code>TOC structure/Configuration Header</code> 则必须存储在第一个扇区中，并且紧跟着是 <code>GP Header</code>。</p>
+<blockquote>
+<p>The raw mode is detected by reading sectors #0, #256, #512, #768. The content of these sectors is then verified for presence of a TOC structure as described in Section 26.1.9. In the case of a GP Device, a Configuration Header (CH) must be located in the first sector followed by a GP header. The CH might be void (only containing a CHSETTINGS item for which the Valid field is zero).</p>
+</blockquote>
+<p><img loading="lazy" src="raw-mode-struct.png" alt="P8"  />
+</p>
+<p>还是分析刚刚提取出来的数据， 从地址 <code>0x20000</code> 开始的第一个扇区：</p>
+<p><img loading="lazy" src="mlo-data.png" alt="P9"  />
+</p>
+<p>看数据的确包含了 RAW Mode 的配置头。
+那么这个扇区之后紧跟着就是包含 <code>GP Header</code> 的镜像文件数据了，从地址 <code>0x0000</code> 开始为数据大小，地址 <code>0x0004</code> 开始为要拷贝至的目标地址，<code>0x0008</code> 地址开始接下来就是镜像数据，结构如下：</p>
+<p><img loading="lazy" src="image-format.png" alt="P10"  />
+</p>
+<p>还是用 <code>hexdump</code> 分析：</p>
+<p><img loading="lazy" src="image-data.png" alt="P11"  />
+</p>
+<p>大小端转换下得到：镜像数据大小为 0x0000fe4c ＝ 65100 bytes，目标地址为 0x402f0400，此地址为 AM335x 的内部 SRAM 的地址，所以 RAM Code 会把 MLO 拷贝到内部 SRAM 运行。</p>
+<p>MLO 启动之后会在地址 <code>0x60000</code> 也就是<code>第 0x300 扇区</code>开始加载 U-Boot。（MLO 会分别在 RAW 模式 FAT 等模式下查找可用的 u-boot.img）。我们使用 <code>hexdump</code> 工具也的确能从地址 <code>0x60000</code> 开始发现有效数据。</p>
+<p>U-Boot 启动后会根据 U-Boot 配置的文件位置信息（<code>DFU_ALT_INFO_MMC</code>）查找可用的 <code>uEnv.txt</code> 文件，并运行相关的命令：</p>
+<pre tabindex="0"><code>##These are needed to be compliant with Angstrom&#39;s 2013.06.20 u-boot.
+
+loadaddr=0x82000000
+fdtaddr=0x88000000
+rdaddr=0x88080000
+
+initrd_high=0xffffffff
+fdt_high=0xffffffff
+
+##These are needed to be compliant with Debian 2014-05-14 u-boot.
+
+loadximage=echo debug: [/boot/vmlinuz-${uname_r}] ... ; load mmc 0:2 ${loadaddr} /boot/vmlinuz-${uname_r}
+loadxfdt=echo debug: [/boot/dtbs/${uname_r}/${fdtfile}] ... ;load mmc 0:2 ${fdtaddr} /boot/dtbs/${uname_r}/${fdtfile}
+loadxrd=echo debug: [/boot/initrd.img-${uname_r}] ... ; load mmc 0:2 ${rdaddr} /boot/initrd.img-${uname_r}; setenv rdsize ${filesize}
+loaduEnvtxt=load mmc 0:2 ${loadaddr} /boot/uEnv.txt ; env import -t ${loadaddr} ${filesize};
+check_dtb=if test -n ${dtb}; then setenv fdtfile ${dtb};fi;
+loadall=run loaduEnvtxt; run check_dtb; run loadximage; run loadxrd; run loadxfdt;
+
+mmcargs=setenv bootargs console=tty0 console=${console} ${optargs} ${cape_disable} ${cape_enable} root=/dev/mmcblk0p2 rootfstype=${mmcrootfstype} ${cmdline}
+
+uenvcmd=run loadall; run mmcargs; echo debug: [${bootargs}] ... ; echo debug: [bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}] ... ; bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr};
+</code></pre><p>官方镜像里面的 <code>uEnv.txt</code> 主要包含从哪个位置加载内核镜像的命令，U-Boot 加载文件后后会运行 <code>uenvcmd</code> 命令，这样就能启动 Linux 内核了。</p>
+<h2 id="如何烧写">如何烧写<a hidden class="anchor" aria-hidden="true" href="#如何烧写">#</a></h2>
+<p>将Bootloader映像用 RAW 模式保存到eMMC/SD卡中，使用如下命令将文件写入到SD卡或者eMMC的起始位置：</p>
+<pre tabindex="0"><code># 这里的conv=ontrunc加不加都行，因为对于块设备来说，notrunc没有作用
+# 每个block为512字节，跳过256个block，写入256个block
+dd if=MLO of=/dev/sdb bs=512 seek=256 count=256 conv=notrunc
+dd if=u-boot.img of=/dev/sdb bs=512 seek=768 count=1024 conv=notrunc
+</code></pre><p>如果你写入的是一个可插拔SD卡，那么用下面的命令来确保内容都确实写入到了卡中：</p>
+<pre tabindex="0"><code>sudo blockdev --flushbufs /dev/sdb
+</code></pre><h2 id="参考">参考<a hidden class="anchor" aria-hidden="true" href="#参考">#</a></h2>
+<ul>
+<li><a href="http://blog.chinaunix.net/uid-24774106-id-3340397.html">主引导扇区MBR的解析 </a>;</li>
+<li><a href="https://uframer.gitbooks.io/beaglebone-black-notes/content/upgrading_u-boot.html">Beaglebone Black Notes</a>;</li>
+<li><a href="http://blog.itpub.net/29475508/viewspace-1850126/">Linux操作系统 读取MBR信息</a></li>
+</ul>
+<hr>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://JesseGuoX.github.io/tinyx/tags/BeagleBone/">BeagleBone</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://JesseGuoX.github.io/tinyx/post/BBB-Prepare-booting/">
+    <span class="title">« Prev Page</span>
+    <br>
+    <span>BeagleBone Black 从零到一 (3 Linux 镜像、initramfs、Device Tree及根文件系统)</span>
+  </a>
+  <a class="next" href="https://JesseGuoX.github.io/tinyx/post/BBB-Uboot/">
+    <span class="title">Next Page »</span>
+    <br>
+    <span>BeagleBone Black 从零到一 (2 MLO、U-Boot)</span>
+  </a>
+</nav>
+
+  </footer><div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+  const gitalk = new Gitalk({
+    clientID: '',
+    clientSecret: '',
+    repo: '',
+    owner: '',
+    admin: [''],
+    id: location.pathname, 
+    distractionFreeMode: false 
+  });
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('gitalk-container').innerHTML = 'Gitalk comments not available by default when the website is previewed locally.';
+      return;
+    }
+    gitalk.render('gitalk-container');
+  })();
+</script>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2022 <a href="https://JesseGuoX.github.io/tinyx">TinyX</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
