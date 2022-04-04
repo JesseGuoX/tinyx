@@ -2,110 +2,110 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Tags on TinyX</title>
-    <link>https://JesseGuoX.github.io/tinyx/tags/</link>
+    <link>https://jesseguox.github.io/tinyx/tags/</link>
     <description>Recent content in Tags on TinyX</description>
     <image>
-      <url>https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</url>
-      <link>https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
+      <url>https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</url>
+      <link>https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Sun, 15 May 2016 15:33:01 +0000</lastBuildDate><atom:link href="https://JesseGuoX.github.io/tinyx/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 15 May 2016 15:33:01 +0000</lastBuildDate><atom:link href="https://jesseguox.github.io/tinyx/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>GFW</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/GFW/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/GFW/</link>
       <pubDate>Sun, 15 May 2016 15:33:01 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/GFW/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/GFW/</guid>
       <description></description>
     </item>
     
     <item>
       <title>NAS</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/NAS/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/NAS/</link>
       <pubDate>Sun, 15 May 2016 15:33:01 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/NAS/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/NAS/</guid>
       <description></description>
     </item>
     
     <item>
       <title>BeagleBone</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/BeagleBone/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/BeagleBone/</link>
       <pubDate>Sun, 17 Apr 2016 15:06:55 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/BeagleBone/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/BeagleBone/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Linux</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/Linux/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/Linux/</link>
       <pubDate>Sun, 17 Apr 2016 15:06:55 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/Linux/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/Linux/</guid>
       <description></description>
     </item>
     
     <item>
       <title>U-Boot</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/U-Boot/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/U-Boot/</link>
       <pubDate>Tue, 22 Mar 2016 20:57:50 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/U-Boot/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/U-Boot/</guid>
       <description></description>
     </item>
     
     <item>
       <title>嵌入式</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/</link>
       <pubDate>Sat, 23 Jan 2016 22:16:55 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/</guid>
       <description></description>
     </item>
     
     <item>
       <title>EtherCAT</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/EtherCAT/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/EtherCAT/</link>
       <pubDate>Sun, 10 Jan 2016 14:51:58 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/EtherCAT/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/EtherCAT/</guid>
       <description></description>
     </item>
     
     <item>
       <title>TwinCAT</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/TwinCAT/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/TwinCAT/</link>
       <pubDate>Wed, 06 Jan 2016 19:28:08 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/TwinCAT/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/TwinCAT/</guid>
       <description></description>
     </item>
     
     <item>
       <title>PROFINET</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/PROFINET/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/PROFINET/</link>
       <pubDate>Thu, 24 Dec 2015 15:29:00 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/PROFINET/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/PROFINET/</guid>
       <description></description>
     </item>
     
     <item>
       <title>技术</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/%E6%8A%80%E6%9C%AF/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/%E6%8A%80%E6%9C%AF/</link>
       <pubDate>Thu, 24 Dec 2015 15:29:00 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/%E6%8A%80%E6%9C%AF/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/%E6%8A%80%E6%9C%AF/</guid>
       <description></description>
     </item>
     
     <item>
       <title>翻译</title>
-      <link>https://JesseGuoX.github.io/tinyx/tags/%E7%BF%BB%E8%AF%91/</link>
+      <link>https://jesseguox.github.io/tinyx/tags/%E7%BF%BB%E8%AF%91/</link>
       <pubDate>Thu, 24 Dec 2015 15:29:00 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/tags/%E7%BF%BB%E8%AF%91/</guid>
+      <guid>https://jesseguox.github.io/tinyx/tags/%E7%BF%BB%E8%AF%91/</guid>
       <description></description>
     </item>
     

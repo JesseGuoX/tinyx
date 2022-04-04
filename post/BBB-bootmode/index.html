@@ -15,15 +15,15 @@ AM335x 有四个不同的启动阶段：
 ROM Code 有两个主要的功能：
  配置设备并初始化主要的外设 建立堆栈 配置开门狗定时器1（设置到三分钟） 配置 PLL 和系统时钟 为下一阶段启动做准备 为下一阶段启动检查启动源（SPL） 把下一启动阶段的 bootloader 代码移动到内存中准备运行  ROM Code 针对不同的启动源有不同的启动过程，但最终还是为了把启动源的代码搬运至内部 RAM 中运行，这里我们主要解析下针对 MMC/SD 卡设备，它的启动过程是怎么样的。">
 <meta name="author" content="X">
-<link rel="canonical" href="https://JesseGuoX.github.io/tinyx/post/BBB-bootmode/">
+<link rel="canonical" href="https://jesseguox.github.io/tinyx/post/BBB-bootmode/">
 <link crossorigin="anonymous" href="/tinyx/assets/css/stylesheet.min.48a18943c2fc15c38a372b8dde1f5e5dc0bc64fa6cb90f5a817d2f8c76b7f3ae.css" integrity="sha256-SKGJQ8L8FcOKNyuN3h9eXcC8ZPpsuQ9agX0vjHa3864=" rel="preload stylesheet" as="style">
 <script defer crossorigin="anonymous" src="/tinyx/assets/js/highlight.min.4dcb3c4f38462f66c6b6137227726f5543cb934cca9788f041c087e374491df2.js" integrity="sha256-Tcs8TzhGL2bGthNyJ3JvVUPLk0zKl4jwQcCH43RJHfI="
     onload="hljs.initHighlightingOnLoad();"></script>
-<link rel="icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="icon" type="image/png" sizes="16x16" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="icon" type="image/png" sizes="32x32" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="apple-touch-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="mask-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="apple-touch-icon" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="mask-icon" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
 <noscript>
@@ -71,12 +71,12 @@ AM335x 有四个不同的启动阶段：
 ROM Code 有两个主要的功能：
  配置设备并初始化主要的外设 建立堆栈 配置开门狗定时器1（设置到三分钟） 配置 PLL 和系统时钟 为下一阶段启动做准备 为下一阶段启动检查启动源（SPL） 把下一启动阶段的 bootloader 代码移动到内存中准备运行  ROM Code 针对不同的启动源有不同的启动过程，但最终还是为了把启动源的代码搬运至内部 RAM 中运行，这里我们主要解析下针对 MMC/SD 卡设备，它的启动过程是怎么样的。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://JesseGuoX.github.io/tinyx/post/BBB-bootmode/" /><meta property="og:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="article:section" content="post" />
+<meta property="og:url" content="https://jesseguox.github.io/tinyx/post/BBB-bootmode/" /><meta property="og:image" content="https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2016-03-09T19:56:06&#43;00:00" />
 <meta property="article:modified_time" content="2016-03-09T19:56:06&#43;00:00" /><meta property="og:site_name" content="ExampleSite" />
 
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
+<meta name="twitter:image" content="https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
 
 <meta name="twitter:title" content="BeagleBone Black 从零到一 (1 启动流程)"/>
 <meta name="twitter:description" content="BeagleBone 的核心处理器是 AM3358，理解启动过程需要查看相应的数据手册。
@@ -92,18 +92,18 @@ ROM Code 有两个主要的功能：
 {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
-  "itemListElement": [, 
+  "itemListElement": [
     {
       "@type": "ListItem",
-      "position":  2 ,
+      "position":  1 ,
       "name": "Posts",
-      "item": "https://JesseGuoX.github.io/tinyx/post/"
+      "item": "https://jesseguox.github.io/tinyx/post/"
     }, 
     {
       "@type": "ListItem",
-      "position":  3 ,
+      "position":  2 ,
       "name": "BeagleBone Black 从零到一 (1 启动流程)",
-      "item": "https://JesseGuoX.github.io/tinyx/post/BBB-bootmode/"
+      "item": "https://jesseguox.github.io/tinyx/post/BBB-bootmode/"
     }
   ]
 }
@@ -129,14 +129,14 @@ ROM Code 有两个主要的功能：
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://JesseGuoX.github.io/tinyx/post/BBB-bootmode/"
+    "@id": "https://jesseguox.github.io/tinyx/post/BBB-bootmode/"
   },
   "publisher": {
     "@type": "Organization",
     "name": "TinyX",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E"
+      "url": "https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E"
     }
   }
 }
@@ -158,7 +158,7 @@ ROM Code 有两个主要的功能：
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://JesseGuoX.github.io/tinyx" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
+            <a href="https://jesseguox.github.io/tinyx/" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
             <span class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -184,22 +184,22 @@ ROM Code 有两个主要的功能：
         </div>
         <ul id="menu">
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/archives" title="Archive">
+                <a href="https://jesseguox.github.io/tinyx/archives" title="Archive">
                     <span>Archive</span>
                 </a>
             </li>
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/categories/" title="Categories">
+                <a href="https://jesseguox.github.io/tinyx/categories/" title="Categories">
                     <span>Categories</span>
                 </a>
             </li>
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
+                <a href="https://jesseguox.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
                     <span>Search</span>
                 </a>
             </li>
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/tags/" title="Tags">
+                <a href="https://jesseguox.github.io/tinyx/tags/" title="Tags">
                     <span>Tags</span>
                 </a>
             </li>
@@ -210,7 +210,7 @@ ROM Code 有两个主要的功能：
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="https://JesseGuoX.github.io/tinyx">Home</a>&nbsp;»&nbsp;<a href="https://JesseGuoX.github.io/tinyx/post/">Posts</a></div>
+    <div class="breadcrumbs"><a href="https://jesseguox.github.io/tinyx/">Home</a>&nbsp;»&nbsp;<a href="https://jesseguox.github.io/tinyx/post/">Posts</a></div>
     <h1 class="post-title">
       BeagleBone Black 从零到一 (1 启动流程)
     </h1>
@@ -322,15 +322,15 @@ ROM 和 SPL bootloader在内部 RAM 中运行，U-boot 和内核在 DDR 中运�
 
   <footer class="post-footer">
     <ul class="post-tags">
-      <li><a href="https://JesseGuoX.github.io/tinyx/tags/BeagleBone/">BeagleBone</a></li>
+      <li><a href="https://jesseguox.github.io/tinyx/tags/BeagleBone/">BeagleBone</a></li>
     </ul>
 <nav class="paginav">
-  <a class="prev" href="https://JesseGuoX.github.io/tinyx/post/BBB-Uboot/">
+  <a class="prev" href="https://jesseguox.github.io/tinyx/post/BBB-Uboot/">
     <span class="title">« Prev Page</span>
     <br>
     <span>BeagleBone Black 从零到一 (2 MLO、U-Boot)</span>
   </a>
-  <a class="next" href="https://JesseGuoX.github.io/tinyx/post/BBB0-Hardware/">
+  <a class="next" href="https://jesseguox.github.io/tinyx/post/BBB0-Hardware/">
     <span class="title">Next Page »</span>
     <br>
     <span>BeagleBone Black 从零到一 (0 硬件及环境搭建)</span>
@@ -362,7 +362,7 @@ ROM 和 SPL bootloader在内部 RAM 中运行，U-boot 和内核在 DDR 中运�
     </main>
     
 <footer class="footer">
-    <span>&copy; 2022 <a href="https://JesseGuoX.github.io/tinyx">TinyX</a></span>
+    <span>&copy; 2022 <a href="https://jesseguox.github.io/tinyx/">TinyX</a></span>
     <span>
         Powered by
         <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &

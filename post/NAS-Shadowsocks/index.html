@@ -12,15 +12,15 @@
 $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno-mvkw-bootstrap_1.2-7_arm.xsh $ chmod 700 syno-mvkw-bootstrap_1.2-7_arm.xsh $ sh syno-mvkw-bootstrap_1.2-7_arm.xsh 运行之后会报错，并生成一个 bootstrap 目录，进去 bootstrap 目录并修改 bootstrap.sh 文件
  #if ! grep Feroceon-KW /proc/cpuinfo &gt;/dev/null 2&gt;&amp;1; then # echo &#34;Error: CPU not Marvell Kirkwood, probably wrong bootstrap.">
 <meta name="author" content="X">
-<link rel="canonical" href="https://JesseGuoX.github.io/tinyx/post/NAS-Shadowsocks/">
+<link rel="canonical" href="https://jesseguox.github.io/tinyx/post/NAS-Shadowsocks/">
 <link crossorigin="anonymous" href="/tinyx/assets/css/stylesheet.min.48a18943c2fc15c38a372b8dde1f5e5dc0bc64fa6cb90f5a817d2f8c76b7f3ae.css" integrity="sha256-SKGJQ8L8FcOKNyuN3h9eXcC8ZPpsuQ9agX0vjHa3864=" rel="preload stylesheet" as="style">
 <script defer crossorigin="anonymous" src="/tinyx/assets/js/highlight.min.4dcb3c4f38462f66c6b6137227726f5543cb934cca9788f041c087e374491df2.js" integrity="sha256-Tcs8TzhGL2bGthNyJ3JvVUPLk0zKl4jwQcCH43RJHfI="
     onload="hljs.initHighlightingOnLoad();"></script>
-<link rel="icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="icon" type="image/png" sizes="16x16" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="icon" type="image/png" sizes="32x32" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="apple-touch-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
-<link rel="mask-icon" href="https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="apple-touch-icon" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
+<link rel="mask-icon" href="https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
 <noscript>
@@ -65,12 +65,12 @@ $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno
 $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno-mvkw-bootstrap_1.2-7_arm.xsh $ chmod 700 syno-mvkw-bootstrap_1.2-7_arm.xsh $ sh syno-mvkw-bootstrap_1.2-7_arm.xsh 运行之后会报错，并生成一个 bootstrap 目录，进去 bootstrap 目录并修改 bootstrap.sh 文件
  #if ! grep Feroceon-KW /proc/cpuinfo &gt;/dev/null 2&gt;&amp;1; then # echo &#34;Error: CPU not Marvell Kirkwood, probably wrong bootstrap." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://JesseGuoX.github.io/tinyx/post/NAS-Shadowsocks/" /><meta property="og:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="article:section" content="post" />
+<meta property="og:url" content="https://jesseguox.github.io/tinyx/post/NAS-Shadowsocks/" /><meta property="og:image" content="https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/><meta property="article:section" content="post" />
 <meta property="article:published_time" content="2016-05-15T15:33:01&#43;00:00" />
 <meta property="article:modified_time" content="2016-05-15T15:33:01&#43;00:00" /><meta property="og:site_name" content="ExampleSite" />
 
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
+<meta name="twitter:image" content="https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E"/>
 
 <meta name="twitter:title" content="Synology DS216Play 安装 ShadowSocks"/>
 <meta name="twitter:description" content="最近一段时间买了个 NAS，用了之后感觉确实很不错，基本上就是一个家用的服务器，什么东西都可以往上扔。唯一后悔的就是买便宜了（毕竟穷），DS216Play 使用的是 STM STiH412 的 32位处理器，既然是 32位，所以一个大杀器－Docker 没法用了，也就是很多基于 Docker 的开箱即用第三方软件没法用。还有就是内置的 VideoStation 是从 IMDb 抓取封面信息，而 IMDb 是被墙了的。于是准备安装个 SS（ShadowSocks），顺便把 Dropbox 里面将近 100G 文件同步回来，之前买的 SSLedge 一个月才 30G 流量，要同步三个月才能完全把 Dropbox 上面文件同步回来，自建的 SS 直接是 1T，相当划算。
@@ -83,18 +83,18 @@ $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno
 {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
-  "itemListElement": [, 
+  "itemListElement": [
     {
       "@type": "ListItem",
-      "position":  2 ,
+      "position":  1 ,
       "name": "Posts",
-      "item": "https://JesseGuoX.github.io/tinyx/post/"
+      "item": "https://jesseguox.github.io/tinyx/post/"
     }, 
     {
       "@type": "ListItem",
-      "position":  3 ,
+      "position":  2 ,
       "name": "Synology DS216Play 安装 ShadowSocks",
-      "item": "https://JesseGuoX.github.io/tinyx/post/NAS-Shadowsocks/"
+      "item": "https://jesseguox.github.io/tinyx/post/NAS-Shadowsocks/"
     }
   ]
 }
@@ -120,14 +120,14 @@ $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://JesseGuoX.github.io/tinyx/post/NAS-Shadowsocks/"
+    "@id": "https://jesseguox.github.io/tinyx/post/NAS-Shadowsocks/"
   },
   "publisher": {
     "@type": "Organization",
     "name": "TinyX",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://JesseGuoX.github.io/tinyx/%3Clink%20/%20abs%20url%3E"
+      "url": "https://jesseguox.github.io/tinyx/%3Clink%20/%20abs%20url%3E"
     }
   }
 }
@@ -149,7 +149,7 @@ $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://JesseGuoX.github.io/tinyx" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
+            <a href="https://jesseguox.github.io/tinyx/" accesskey="h" title="TinyX 👾 (Alt + H)">TinyX 👾</a>
             <span class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -175,22 +175,22 @@ $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno
         </div>
         <ul id="menu">
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/archives" title="Archive">
+                <a href="https://jesseguox.github.io/tinyx/archives" title="Archive">
                     <span>Archive</span>
                 </a>
             </li>
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/categories/" title="Categories">
+                <a href="https://jesseguox.github.io/tinyx/categories/" title="Categories">
                     <span>Categories</span>
                 </a>
             </li>
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
+                <a href="https://jesseguox.github.io/tinyx/search/" title="Search (Alt &#43; /)" accesskey=/>
                     <span>Search</span>
                 </a>
             </li>
             <li>
-                <a href="https://JesseGuoX.github.io/tinyx/tags/" title="Tags">
+                <a href="https://jesseguox.github.io/tinyx/tags/" title="Tags">
                     <span>Tags</span>
                 </a>
             </li>
@@ -201,7 +201,7 @@ $ wget http://ipkg.nslu2-linux.org/feeds/optware/cs08q1armel/cross/unstable/syno
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="https://JesseGuoX.github.io/tinyx">Home</a>&nbsp;»&nbsp;<a href="https://JesseGuoX.github.io/tinyx/post/">Posts</a></div>
+    <div class="breadcrumbs"><a href="https://jesseguox.github.io/tinyx/">Home</a>&nbsp;»&nbsp;<a href="https://jesseguox.github.io/tinyx/post/">Posts</a></div>
     <h1 class="post-title">
       Synology DS216Play 安装 ShadowSocks
     </h1>
@@ -392,11 +392,11 @@ privoxy privoxy.config
 
   <footer class="post-footer">
     <ul class="post-tags">
-      <li><a href="https://JesseGuoX.github.io/tinyx/tags/NAS/">NAS</a></li>
-      <li><a href="https://JesseGuoX.github.io/tinyx/tags/GFW/">GFW</a></li>
+      <li><a href="https://jesseguox.github.io/tinyx/tags/NAS/">NAS</a></li>
+      <li><a href="https://jesseguox.github.io/tinyx/tags/GFW/">GFW</a></li>
     </ul>
 <nav class="paginav">
-  <a class="next" href="https://JesseGuoX.github.io/tinyx/post/BBB-Prepare-booting/">
+  <a class="next" href="https://jesseguox.github.io/tinyx/post/BBB-Prepare-booting/">
     <span class="title">Next Page »</span>
     <br>
     <span>BeagleBone Black 从零到一 (3 Linux 镜像、initramfs、Device Tree及根文件系统)</span>
@@ -428,7 +428,7 @@ privoxy privoxy.config
     </main>
     
 <footer class="footer">
-    <span>&copy; 2022 <a href="https://JesseGuoX.github.io/tinyx">TinyX</a></span>
+    <span>&copy; 2022 <a href="https://jesseguox.github.io/tinyx/">TinyX</a></span>
     <span>
         Powered by
         <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &

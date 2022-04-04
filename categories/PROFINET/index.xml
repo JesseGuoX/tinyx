@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>PROFINET on TinyX</title>
-    <link>https://JesseGuoX.github.io/tinyx/categories/PROFINET/</link>
+    <link>https://jesseguox.github.io/tinyx/categories/PROFINET/</link>
     <description>Recent content in PROFINET on TinyX</description>
     <image>
-      <url>https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</url>
-      <link>https://JesseGuoX.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
+      <url>https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</url>
+      <link>https://jesseguox.github.io/tinyx/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Thu, 24 Dec 2015 15:29:00 +0000</lastBuildDate><atom:link href="https://JesseGuoX.github.io/tinyx/categories/PROFINET/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 24 Dec 2015 15:29:00 +0000</lastBuildDate><atom:link href="https://jesseguox.github.io/tinyx/categories/PROFINET/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>如何解析 PROFINET 周期性数据帧</title>
-      <link>https://JesseGuoX.github.io/tinyx/post/decode-PROFINET-frames/</link>
+      <link>https://jesseguox.github.io/tinyx/post/decode-PROFINET-frames/</link>
       <pubDate>Thu, 24 Dec 2015 15:29:00 +0000</pubDate>
       
-      <guid>https://JesseGuoX.github.io/tinyx/post/decode-PROFINET-frames/</guid>
+      <guid>https://jesseguox.github.io/tinyx/post/decode-PROFINET-frames/</guid>
       <description>&lt;blockquote&gt;
 &lt;p&gt;原文：&lt;a href=&#34;https://kb.hilscher.com/pages/viewpage.action?pageId=22830458&#34;&gt;How to decode cyclic PROFINET frames?&lt;/a&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
